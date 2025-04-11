@@ -1,0 +1,22 @@
+{
+  "exclude": [ ".direnv", "__pycache__", "node_modules" ],
+  "venvPath": "/home/solis/.cache/pypoetry/virtualenvs",
+  "venv": "freelancequest-Hs2bGebE-py3.13",
+
+  "reportTypeshedErrors": false,
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportIncompatibleVariableOverride": false,
+
+  "executionEnvironments": [
+    {
+      "root": "./",
+      "venv": "/home/solis/.cache/pypoetry/virtualenvs/freelancequest-Hs2bGebE-py3.13",
+      "extraPaths": [
+        "./freelancequest/",
+        "/home/solis/.cache/pypoetry/virtualenvs/freelancequest-Hs2bGebE-py3.13/lib/python3.13/site-packages"
+      ]
+    }
+  ]
+}
+
