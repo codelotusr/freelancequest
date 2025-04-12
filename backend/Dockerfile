@@ -13,6 +13,9 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
+# Collect static files for DRF, admin, etc.
+RUN python manage.py collectstatic --noinput
+
 # Run Daphne server (ASGI)
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "freelancequest.asgi:application"]
 

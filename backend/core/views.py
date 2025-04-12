@@ -2,6 +2,7 @@ import os
 import time
 
 import redis
+from django.conf import settings
 from django.db import connections
 from django.db.utils import OperationalError
 from rest_framework.permissions import AllowAny
@@ -33,11 +34,10 @@ class PingView(APIView):
             health["database"] = "error"
 
         try:
-            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-            r = redis.Redis.from_url(redis_url)
-            if r.ping():
-                health["redis"] = "ok"
-        except Exception:
-            health["redis"] = "error"
+            redis_client = redis.Redis.from_url(settings.REDIS_URL)
+            redis_client.ping()
+            health["redis"] = "ok"
+        except Exception as e:
+            health["redis"] = f"error: {str(e)}"
 
         return Response(health)

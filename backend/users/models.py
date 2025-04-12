@@ -1,12 +1,17 @@
+from typing import TYPE_CHECKING
+
+from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import (
     AbstractBaseUser,
-    BaseUserManager,
     Group,
     Permission,
     PermissionsMixin,
 )
 from django.db import models
 from django.utils import timezone
+
+if TYPE_CHECKING:
+    from .models import UserManager
 
 
 class UserManager(BaseUserManager):
@@ -50,6 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+    objects: "UserManager"
 
     def __str__(self):
         return self.email

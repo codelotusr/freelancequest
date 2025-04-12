@@ -16,7 +16,7 @@ env = environ.Env(DEBUG=(bool, False), DJANGO_ENV=(str, "development"))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
-print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379")
 
 # Application definition
 
@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "channels",
+    "drf_spectacular",
     # Debugging
     "debug_toolbar",
     "django_extensions",
@@ -50,6 +51,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+]
+
+AUTHENTICATION_BACKENDS = [
+    "users.authentication.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # URLS & WSGI/ASGI
@@ -133,7 +140,7 @@ USE_I18N = True
 USE_TZ = True
 
 # AUTH MODEL
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
 
 # DRF + JWT
 REST_FRAMEWORK = {
@@ -141,6 +148,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema",),
 }
 
 SIMPLE_JWT = {
@@ -156,6 +164,8 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

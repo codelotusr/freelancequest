@@ -22,6 +22,8 @@ daphne = "^4.1.2"
 django-filter = "^25.1"
 drf-nested-routers = "^0.94.1"
 watchgod = "^0.8.2"
+whitenoise = "^6.9.0"
+drf-spectacular = "^0.28.0"
 
 
 [tool.poetry.group.dev.dependencies]

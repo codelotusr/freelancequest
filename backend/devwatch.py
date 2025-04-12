@@ -1,8 +1,12 @@
-from watchgod import run_process
 import subprocess
+
+from watchgod import run_process
 
 
 def start():
+    print("🔄 Running migrations...")
+    subprocess.run(["python", "manage.py", "migrate"])
+    print("🚀 Starting Daphne...")
     subprocess.run(
         [
             "daphne",
