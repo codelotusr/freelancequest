@@ -21,6 +21,7 @@ psycopg2 = "^2.9.10"
 daphne = "^4.1.2"
 django-filter = "^25.1"
 drf-nested-routers = "^0.94.1"
+watchgod = "^0.8.2"
 
 
 [tool.poetry.group.dev.dependencies]
