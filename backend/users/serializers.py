@@ -1,54 +1,54 @@
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import setup_user_email
+from dj_rest_auth.registration.serializers import (
+    RegisterSerializer as DjRegisterSerializer,
+)
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from users.models import ClientProfile, FreelancerProfile, User
+from users.models import Address, ClientProfile, FreelancerProfile, User
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    role = serializers.ChoiceField(
-        choices=[("freelancer", "freelancer"), ("client", "client")]
-    )
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ["street", "city", "postal_code", "country"]
+
+
+class CustomRegisterSerializer(DjRegisterSerializer):
+    username = None
+    first_name = None
+    last_name = None
 
     class Meta:
         model = User
-        fields = ("email", "password", "role")
+        fields = ("email", "password1", "password2")
 
-    def create(self, validated_data):
-        role = validated_data.pop("role")
-        user = User.objects.create_user(**validated_data)
+    def get_cleaned_data(self):
+        return {
+            "email": self.validated_data.get("email", ""),
+            "password1": self.validated_data.get("password1", ""),
+            "password2": self.validated_data.get("password2", ""),
+        }
 
-        if role == "freelancer":
-            FreelancerProfile.objects.create(user=user)
-        else:
-            ClientProfile.objects.create(user=user)
-
-        print(User.objects.count())
-
+    def save(self, request):
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.get_cleaned_data()
+        adapter.save_user(request, user, self)
+        setup_user_email(request, user, [])
+        user.set_password(self.cleaned_data["password1"])
+        user.save()
         return user
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = "email"
+class FreelancerOnboardingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FreelancerProfile
+        fields = ("bio", "skills", "xp", "portfolio_links")
 
-    def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
 
-        if email:
-            email = email.lower()
-
-        user = authenticate(
-            request=self.context.get("request"), email=email, password=password
-        )
-
-        if not user:
-            raise serializers.ValidationError(
-                "No active account found with the given credentials"
-            )
-
-        data = super().validate(attrs)
-        assert isinstance(user, User)
-        data["email"] = user.email
-        return data
+class ClientOnboardingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientProfile
+        fields = ("organization", "business_description")

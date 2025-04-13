@@ -4,6 +4,8 @@ from watchgod import run_process
 
 
 def start():
+    print("🔄 Making migrations...")
+    subprocess.run(["python", "manage.py", "makemigrations"])
     print("🔄 Running migrations...")
     subprocess.run(["python", "manage.py", "migrate"])
     print("🚀 Starting Daphne...")

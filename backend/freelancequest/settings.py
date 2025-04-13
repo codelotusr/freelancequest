@@ -30,10 +30,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party apps
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "channels",
+    "django_filters",
     "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
+    # OAuth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    # DJ Rest Auth
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     # Debugging
     "debug_toolbar",
     "django_extensions",
@@ -43,14 +53,15 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
@@ -94,6 +105,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -133,6 +155,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Site ID
+SITE_ID = 1
 
 # TIMEZONE
 LANGUAGE_CODE = "en-us"
@@ -146,9 +170,10 @@ AUTH_USER_MODEL = "users.User"
 # DRF + JWT
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema",),
 }
 
@@ -159,7 +184,36 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+REST_USE_JWT = True
 
+# Cookie setup
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": "freelancequest-access-token",
+    "JWT_AUTH_REFRESH_COOKIE": "freelancequest-refresh-token",
+    "JWT_AUTH_COOKIE_PATH": "/",
+    "JWT_AUTH_SECURE": False,
+    "JWT_AUTH_HTTPONLY": True,
+    "JWT_AUTH_SAMESITE": "Lax",
+    "JWT_AUTH_RETURN_EXPIRATION": True,
+    "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
+    "SIGNUP_FIELDS": {
+        "username": {"required": False},
+        "email": {"required": True},
+        "password1": {"required": True},
+        "password2": {"required": True},
+    },
+}
+
+# AllAuth configs
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_SIGNUP_FIELDS = ["email", "password1", "password2"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Adapters
+ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
