@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "channels",
     "drf_spectacular",
+    "rest_framework_simplejwt.token_blacklist",
     # Debugging
     "debug_toolbar",
     "django_extensions",
