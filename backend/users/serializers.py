@@ -4,6 +4,7 @@ from dj_rest_auth.registration.serializers import (
     RegisterSerializer as DjRegisterSerializer,
 )
 from django.contrib.auth import authenticate
+from django.db.utils import IntegrityError
 from rest_framework import serializers
 
 from users.models import Address, ClientProfile, FreelancerProfile, User
@@ -35,10 +36,15 @@ class CustomRegisterSerializer(DjRegisterSerializer):
         adapter = get_adapter()
         user = adapter.new_user(request)
         self.cleaned_data = self.get_cleaned_data()
-        adapter.save_user(request, user, self)
-        setup_user_email(request, user, [])
-        user.set_password(self.cleaned_data["password1"])
-        user.save()
+        try:
+            adapter.save_user(request, user, self)
+            setup_user_email(request, user, [])
+            user.set_password(self.cleaned_data["password1"])
+            user.save()
+        except IntegrityError:
+            raise serializers.ValidationError(
+                {"email": "A user with this email already exists."}
+            )
         return user
 
 
