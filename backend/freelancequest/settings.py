@@ -100,8 +100,8 @@ CHANNEL_LAYERS = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -192,7 +192,7 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "freelancequest-refresh-token",
     "JWT_AUTH_COOKIE_PATH": "/",
     "JWT_AUTH_SECURE": False,
-    "JWT_AUTH_HTTPONLY": True,
+    "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_SAMESITE": "Lax",
     "JWT_AUTH_RETURN_EXPIRATION": True,
     "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
