@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AuthContext, User } from "./authContext";
-import { getCurrentUser, login, logout, register } from "../services/authApi";
+import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -10,13 +10,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await getCurrentUser();
       setUser(res.data);
-    } catch {
-      setUser(null);
+    } catch (err: any) {
+      const status = err.response?.status;
+
+      if (status === 401) {
+        try {
+          await refreshToken();
+          const res = await getCurrentUser();
+          setUser(res.data);
+        } catch (refreshErr) {
+          console.error("Token refresh failed", refreshErr);
+          await logout();
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
   };
-
   const loginUser = async (email: string, password: string) => {
     await login({ email, password });
     await fetchUser();
@@ -24,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logoutUser = async () => {
     await logout();
+    localStorage.removeItem("refreshToken");
     setUser(null);
   };
 
@@ -32,8 +46,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchUser();
+    const hasAuthCookies = () => {
+      return document.cookie.includes("access=") && document.cookie.includes("refresh=");
+    };
+
+    if (hasAuthCookies()) {
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
 
   return (
     <AuthContext.Provider

@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import WelcomePage from "../pages/WelcomePage";
 import RegisterPage from "../pages/RegisterPage";
+import LoginPage from "../pages/LoginPage";
 import TempPage from "../pages/TempPage";
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -12,6 +13,7 @@ export default function AppRoutes() {
       <Route path="/" element={<WelcomePage />} />
       <Route element={<AuthLayout />}>
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
       </Route>
       <Route element={<MainLayout />}>
         <Route element={<ProtectedRoute />}>

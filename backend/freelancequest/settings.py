@@ -116,9 +116,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+CSRF_COOKIE_HTTPONLY = False
 
 TEMPLATES = [
     {
@@ -188,8 +189,8 @@ REST_USE_JWT = True
 # Cookie setup
 REST_AUTH = {
     "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "freelancequest-access-token",
-    "JWT_AUTH_REFRESH_COOKIE": "freelancequest-refresh-token",
+    "JWT_AUTH_COOKIE": "access",
+    "JWT_AUTH_REFRESH_COOKIE": "refresh",
     "JWT_AUTH_COOKIE_PATH": "/",
     "JWT_AUTH_SECURE": False,
     "JWT_AUTH_HTTPONLY": False,

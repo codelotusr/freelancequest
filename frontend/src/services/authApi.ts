@@ -11,4 +11,6 @@ export const login = (data: { email: string; password: string }) =>
 
 export const logout = () => api.post("/auth/logout/");
 
-export const getCurrentUser = () => api.get("/auth/me/");
+export const getCurrentUser = () => api.get("/auth/user/");
+
+export const refreshToken = () => api.post("/auth/token/refresh/");
