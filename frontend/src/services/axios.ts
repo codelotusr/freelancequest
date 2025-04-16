@@ -17,14 +17,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Optional: handle 401s or refresh logic
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // TODO: Optionally handle logout or token refresh
-      console.warn("Unauthorized! You may want to redirect or show a message.");
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        await axios.post(
+          "http://localhost:8000/api/auth/token/refresh/",
+          {},
+          { withCredentials: true },
+        );
+        return api(originalRequest);
+      } catch {
+        console.warn("Refresh token expired. Redirecting to login...");
+        window.location.href = "/login";
+      }
     }
+
     return Promise.reject(error);
   },
 );

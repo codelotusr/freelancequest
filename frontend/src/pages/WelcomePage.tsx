@@ -1,6 +1,7 @@
-import { Button, Navbar, DarkThemeToggle } from "flowbite-react";
+import { Button, Navbar } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { Trophy, Users, TrendingUp } from "lucide-react";
+import DarkModeToggle from "../components/DarkModeToggle"
 
 export default function WelcomePage() {
   return (
@@ -13,7 +14,7 @@ export default function WelcomePage() {
           FreelanceQuest
         </Link>
         <div className="flex items-center gap-2">
-          <DarkThemeToggle />
+          <DarkModeToggle />
           <Link to="/register">
             <Button size="sm" className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
               Registruotis
