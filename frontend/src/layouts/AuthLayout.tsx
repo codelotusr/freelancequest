@@ -1,8 +1,8 @@
+import { Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import BaseLayout from "./BaseLayout";
-import { Outlet } from "react-router-dom";
 
-export default function MainLayout() {
+export default function AuthLayout() {
   return (
     <BaseLayout>
       <Header variant="auth" />
@@ -12,3 +12,4 @@ export default function MainLayout() {
     </BaseLayout>
   );
 }
+

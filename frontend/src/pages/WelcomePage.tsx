@@ -1,36 +1,10 @@
-import { Button, Navbar } from "flowbite-react";
-import { Link } from "react-router-dom";
 import { Trophy, Users, TrendingUp } from "lucide-react";
-import DarkModeToggle from "../components/DarkModeToggle"
+import Header from "../components/Header"
 
 export default function WelcomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
-      <Navbar fluid rounded className="shadow-md px-4 dark:bg-gray-900 dark:text-white">
-        <Link
-          to="/"
-          className="text-xl font-semibold whitespace-nowrap text-blue-700 dark:text-white"
-        >
-          FreelanceQuest
-        </Link>
-        <div className="flex items-center gap-2">
-          <DarkModeToggle />
-          <Link to="/register">
-            <Button size="sm" className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-              Registruotis
-            </Button>
-          </Link>
-          <Link to="/login">
-            <Button
-              size="sm"
-              outline
-              className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:border-white dark:text-white dark:hover:bg-gray-700"
-            >
-              Prisijungti
-            </Button>
-          </Link>
-        </div>
-      </Navbar>
+      <Header variant="welcome" />
 
       <main className="flex flex-col items-center justify-center flex-1 px-4 py-12">
         <div className="max-w-3xl text-center">
