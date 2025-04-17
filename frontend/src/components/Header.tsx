@@ -2,9 +2,10 @@ import React from "react";
 import { Navbar, Button } from "flowbite-react";
 import { Link } from "react-router-dom";
 import DarkModeToggle from "./DarkModeToggle";
+import LogoutButton from "../components/LogoutButton"
 
 interface HeaderProps {
-  variant?: "welcome" | "auth";
+  variant?: "welcome" | "auth" | "onboarding";
 }
 
 export default function Header({ variant = "welcome" }: HeaderProps) {
@@ -45,6 +46,10 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
               Grįžti
             </Button>
           </Link>
+        )}
+
+        {variant === "onboarding" && (
+          <LogoutButton />
         )}
 
       </div>

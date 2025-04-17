@@ -14,3 +14,8 @@ export const logout = () => api.post("/auth/logout/");
 export const getCurrentUser = () => api.get("/auth/user/");
 
 export const refreshToken = () => api.post("/auth/token/refresh/");
+
+export const updateUserProfile = (formData: FormData) =>
+  api.patch("/auth/user/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });

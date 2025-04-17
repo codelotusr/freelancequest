@@ -5,6 +5,16 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  role: string | null;
+  profile_picture: File | null;
+  // freelancer
+  bio?: string;
+  skills?: string[];
+  portfolio_links?: string[];
+  // client
+  organization?: string;
+  business_description?: string;
+  website?: string;
 }
 
 export interface AuthContextType {

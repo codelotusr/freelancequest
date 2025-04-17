@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AuthContext, User } from "./authContext";
 import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
+import toast from "react-hot-toast";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -36,9 +37,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logoutUser = async () => {
-    await logout();
-    localStorage.removeItem("refreshToken");
-    setUser(null);
+    try {
+      await logout();
+      localStorage.removeItem("refreshToken");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+      throw error;
+    }
   };
 
   const registerUser = async (email: string, password1: string, password2: string) => {
@@ -57,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const isOnboardingRequired = !!user && (!user.role || !user.first_name || !user.last_name);
 
   return (
     <AuthContext.Provider
@@ -67,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loginUser,
         logoutUser,
         registerUser,
+        isOnboardingRequired,
       }}
     >
       {children}

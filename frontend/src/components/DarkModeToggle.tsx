@@ -9,7 +9,7 @@ export default function DarkModeToggle() {
     <button
       onClick={toggleDarkMode}
       className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-      aria-label="Perjungti tamsų rėžimą"
+      aria-label="Įjungti arba išjungtį tamsų rėžimą"
     >
       {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
     </button>
