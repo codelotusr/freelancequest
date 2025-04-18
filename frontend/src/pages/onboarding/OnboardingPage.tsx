@@ -1,24 +1,8 @@
 import React, { useState } from "react";
 import { Card } from "flowbite-react";
+import { FormData, Role } from "../../components/OnboardingFormData";
 import OnboardingStepOneName from "./OnboardingStepOneName";
-
-
-export type Role = "freelancer" | "client";
-
-export interface FormData {
-  first_name: string;
-  last_name: string;
-  role: Role | "";
-  profile_picture: File | null;
-  // freelancer specifics
-  bio?: string;
-  skills?: string[];
-  portfolio_links?: string[];
-  // client specifics 
-  organization?: string;
-  business_description?: string;
-  website?: string;
-}
+import OnboardingStepTwoRole from "./OnboardingStepTwoRole";
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -28,6 +12,15 @@ export default function OnboardingPage() {
     role: "",
     profile_picture: null,
   });
+  const { role } = formData;
+
+  const stepLabels =
+    role === "freelancer"
+      ? ["Vardas", "Rolė", "Apie tave", "Adresas", "Nuotrauka"]
+      : role === "client"
+        ? ["Vardas", "Rolė", "Apie įmonę", "Adresas", "Nuotrauka"]
+        : ["Vardas", "Rolė"];
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleNext = () => setStep((s) => s + 1);
@@ -48,27 +41,25 @@ export default function OnboardingPage() {
           <div className="absolute bottom-0 left-0 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden z-0">
             <div
               className="bg-blue-500 h-full transition-all duration-300"
-              style={{ width: `${(step / 3) * 100}%` }}
+              style={{ width: `${(step / stepLabels.length) * 100}%` }}
             />
           </div>
 
-          <div className="absolute left-0 top-0 w-full flex justify-between z-10">
-            <div className="flex flex-col items-center w-1/3">
-              <span className={`text-base md:text-lg font-semibold transition-all ${step === 1 ? "text-blue-500 scale-110" : "text-gray-500 dark:text-gray-300"}`}>
-                Vardas
-              </span>
-            </div>
-            <div className="flex flex-col items-center w-1/3">
-              <span className={`text-base md:text-lg font-semibold transition-all ${step === 2 ? "text-blue-500 scale-110" : "text-gray-500 dark:text-gray-300"}`}>
-                Idk
-              </span>
-            </div>
-            <div className="flex flex-col items-center w-1/3">
-              <span className={`text-base md:text-lg font-semibold transition-all ${step === 3 ? "text-blue-500 scale-110" : "text-gray-500 dark:text-gray-300"}`}>
-                Idk
-              </span>
-            </div>
+          <div className="flex w-full justify-between z-10 absolute top-0 left-0">
+            {stepLabels.map((label, index) => (
+              <div key={index} className="flex-1 flex justify-center">
+                <span
+                  className={`text-sm md:text-ld font-semibold transition-all ${step === index + 1
+                    ? "text-blue-500 scale-110"
+                    : "text-gray-500 dark:text-gray-300"
+                    }`}
+                >
+                  {label}
+                </span>
+              </div>
+            ))}
           </div>
+
         </div>
 
         <Card className="w-full min-h-[380px] px-6 py-8 shadow-lg text-left">
@@ -78,6 +69,15 @@ export default function OnboardingPage() {
                 formData={formData}
                 onChange={handleChange}
                 onNext={handleNext}
+              />
+            )}
+
+            {step === 2 && (
+              <OnboardingStepTwoRole
+                formData={formData}
+                onChange={handleChange}
+                onNext={handleNext}
+                onBack={handleBack}
               />
             )}
           </div>

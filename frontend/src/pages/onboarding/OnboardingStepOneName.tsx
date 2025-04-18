@@ -1,6 +1,5 @@
-import React from "react";
 import { Label, TextInput, Button } from "flowbite-react";
-import { FormData } from "./OnboardingPage";
+import { FormData } from "../../components/OnboardingFormData"
 import { HiOutlineUser } from "react-icons/hi";
 
 interface Props {
@@ -37,7 +36,7 @@ export default function OnboardingStepOneName({ formData, onChange, onNext }: Pr
             value={formData.last_name}
             onChange={(e) => onChange({ last_name: e.target.value })}
             required
-            placeholder="pvz. Smaliuks"
+            placeholder="pvz. Smaliukas"
           />
         </div>
 
