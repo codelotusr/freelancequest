@@ -12,6 +12,7 @@ export interface FormData {
   portfolio_links?: string[];
 
   // client
+  is_business?: boolean;
   organization?: string;
   business_description?: string;
   website?: string;

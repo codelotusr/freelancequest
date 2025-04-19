@@ -1,4 +1,3 @@
-import React from "react";
 import { Navbar, Button } from "flowbite-react";
 import { Link } from "react-router-dom";
 import DarkModeToggle from "./DarkModeToggle";

@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import { Card } from "flowbite-react";
-import { FormData, Role } from "../../components/OnboardingFormData";
+import { updateUserProfile } from "../../services/authApi";
+import { FormData as OnboardingFormData } from "../../components/OnboardingFormData";
 import OnboardingStepOneName from "./OnboardingStepOneName";
 import OnboardingStepTwoRole from "./OnboardingStepTwoRole";
+import OnboardingStepThreeFreelancer from "./OnboardingStepThreeFreelancer";
+import OnboardingStepThreeClient from "./OnboardingStepThreeClient";
+import OnboardingStepFourAddress from "./OnboardingStepFourAddress";
+import OnboardingStepFiveProfilePicture from "./OnboardingStepFiveProfilePicture";
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     first_name: "",
     last_name: "",
     role: "",
@@ -18,7 +23,7 @@ export default function OnboardingPage() {
     role === "freelancer"
       ? ["Vardas", "Rolė", "Apie tave", "Adresas", "Nuotrauka"]
       : role === "client"
-        ? ["Vardas", "Rolė", "Apie įmonę", "Adresas", "Nuotrauka"]
+        ? ["Vardas", "Rolė", "Apie jus", "Adresas", "Nuotrauka"]
         : ["Vardas", "Rolė"];
 
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +33,44 @@ export default function OnboardingPage() {
 
   const handleChange = (updates: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleFinish = async () => {
+    setIsLoading(true);
+    try {
+      const form = new FormData();
+
+      form.append("first_name", formData.first_name);
+      form.append("last_name", formData.last_name);
+      if (formData.profile_picture) form.append("profile_picture", formData.profile_picture);
+      if (formData.role) form.append("role", formData.role);
+
+      if (formData.address) {
+        form.append("address.street", formData.address.street);
+        form.append("address.city", formData.address.city);
+        form.append("address.postal_code", formData.address.postal_code);
+        form.append("address.country", formData.address.country);
+      }
+
+      if (formData.role === "freelancer") {
+        form.append("freelancer_profile.bio", formData.bio || "");
+        form.append("freelancer_profile.skills", JSON.stringify(formData.skills || []));
+        form.append("freelancer_profile.portfolio_links", JSON.stringify(formData.portfolio_links || []));
+      } else if (formData.role === "client") {
+        form.append("client_profile.organization", formData.organization || "");
+        form.append("client_profile.business_description", formData.business_description || "");
+        form.append("client_profile.website", formData.website || "");
+      }
+
+      await updateUserProfile(form);
+
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Onboarding failed:", error);
+      alert("Nepavyko užbaigti registracijos. Bandykite dar kartą.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -80,6 +123,44 @@ export default function OnboardingPage() {
                 onBack={handleBack}
               />
             )}
+
+            {step === 3 && role === "freelancer" && (
+              <OnboardingStepThreeFreelancer
+                formData={formData}
+                onChange={handleChange}
+                onNext={handleNext}
+                onBack={handleBack}
+              />
+            )}
+
+            {step === 3 && role === "client" && (
+              <OnboardingStepThreeClient
+                formData={formData}
+                onChange={handleChange}
+                onNext={handleNext}
+                onBack={handleBack}
+              />
+            )}
+
+            {step === 4 && (
+              <OnboardingStepFourAddress
+                formData={formData}
+                onChange={handleChange}
+                onNext={handleNext}
+                onBack={handleBack}
+              />
+            )}
+
+            {step === 5 && (
+              <OnboardingStepFiveProfilePicture
+                formData={formData}
+                onChange={handleChange}
+                onBack={handleBack}
+                onFinish={handleFinish}
+              />
+            )}
+
+
           </div>
         </Card>
       </div>
