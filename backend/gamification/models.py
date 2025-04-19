@@ -6,7 +6,11 @@ from django.utils import timezone
 
 
 class GamificationProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="gamification_profile",
+    )
     xp = models.PositiveIntegerField(default=0)
     level = models.PositiveIntegerField(default=1)
 

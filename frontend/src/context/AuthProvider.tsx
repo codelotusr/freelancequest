@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AuthContext, User } from "./authContext";
 import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
-import toast from "react-hot-toast";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);

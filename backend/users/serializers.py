@@ -9,6 +9,7 @@ from dj_rest_auth.serializers import UserDetailsSerializer
 from django.db.utils import IntegrityError
 from rest_framework import serializers
 
+from gamification.serializers import GamificationProfileSerializer
 from users.models import Address, ClientProfile, FreelancerProfile, User
 
 
@@ -68,6 +69,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
     freelancer_profile = FreelancerProfileSerializer(read_only=True)
     client_profile = ClientProfileSerializer(read_only=True)
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=False)
+    gamification_profile = GamificationProfileSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -82,6 +84,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "role",
             "freelancer_profile",
             "client_profile",
+            "gamification_profile",
         ]
         read_only_fields = ["email"]
 

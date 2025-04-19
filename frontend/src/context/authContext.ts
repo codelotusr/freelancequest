@@ -1,12 +1,20 @@
 import { createContext } from "react";
 
+interface GamificationProfile {
+  xp: number;
+  level: number;
+}
+
 export interface User {
   pk: number;
   email: string;
   first_name: string;
   last_name: string;
+  username: string;
   role: string | null;
-  profile_picture: File | null;
+  profile_picture: string | null;
+
+  gamification_profile?: GamificationProfile;
   // freelancer
   bio?: string;
   skills?: string[];

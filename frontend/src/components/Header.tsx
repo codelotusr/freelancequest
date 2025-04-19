@@ -1,13 +1,19 @@
-import { Navbar, Button } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Navbar, Button, Avatar } from "flowbite-react";
+import { Link, useNavigate } from "react-router-dom";
 import DarkModeToggle from "./DarkModeToggle";
 import LogoutButton from "../components/LogoutButton"
+import { FaFlask, FaLevelUpAlt } from "react-icons/fa";
+import { Level } from 'lucide-react';
+import { useAuth } from "../context/useAuth"
 
 interface HeaderProps {
-  variant?: "welcome" | "auth" | "onboarding";
+  variant?: "welcome" | "auth" | "onboarding" | "main";
 }
 
 export default function Header({ variant = "welcome" }: HeaderProps) {
+  const user = useAuth().user;
+  const navigate = useNavigate();
+
   return (
     <Navbar fluid rounded className="shadow-md px-4 dark:bg-gray-900 dark:text-white">
       <Link
@@ -49,6 +55,39 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
 
         {variant === "onboarding" && (
           <LogoutButton />
+        )}
+
+        {variant === "main" && user && (
+          <>
+            <div className="text-right">
+              <p className="text-sm font-semibold">
+                {user.first_name} {user.last_name}
+              </p>
+              {user.gamification_profile && (
+                <p className="text-xs text-gray-500 dark:text-gray-300 flex items-center gap-2">
+                  <span className="flex items-center gap-1">
+                    <FaFlask className="text-blue-400" /> {user.gamification_profile.xp} XP
+                  </span>
+                  •
+                  <span className="flex items-center gap-1">
+                    <FaLevelUpAlt className="text-green-500" /> {user.gamification_profile.level} Lygis
+                  </span>
+                </p>
+
+              )}
+            </div>
+
+            <Avatar
+              img={user.profile_picture || undefined}
+              alt={user.first_name}
+              rounded
+              className="cursor-pointer w-10 h-10"
+              onClick={() => navigate(`/profile/${user.username}`)}
+            />
+
+            <LogoutButton />
+
+          </>
         )}
 
       </div>

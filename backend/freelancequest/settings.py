@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     # Local apps
     "core",
     "users",
-    "gamification",
+    "gamification.apps.GamificationConfig",
 ]
 
 MIDDLEWARE = [
