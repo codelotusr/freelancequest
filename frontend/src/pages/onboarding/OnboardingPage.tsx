@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card } from "flowbite-react";
 import { updateUserProfile } from "../../services/authApi";
-import { FormData as OnboardingFormData } from "../../components/OnboardingFormData";
+import { OnboardingFormData } from "../../components/OnboardingFormData";
 import OnboardingStepOneName from "./OnboardingStepOneName";
 import OnboardingStepTwoRole from "./OnboardingStepTwoRole";
 import OnboardingStepThreeFreelancer from "./OnboardingStepThreeFreelancer";
@@ -14,6 +14,7 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState<OnboardingFormData>({
     first_name: "",
     last_name: "",
+    username: "",
     role: "",
     profile_picture: null,
   });
@@ -40,8 +41,9 @@ export default function OnboardingPage() {
     try {
       const form = new FormData();
 
-      form.append("first_name", formData.first_name);
-      form.append("last_name", formData.last_name);
+      if (formData.first_name) form.append("first_name", formData.first_name);
+      if (formData.last_name) form.append("last_name", formData.last_name);
+      if (formData.username) form.append("username", formData.username);
       if (formData.profile_picture) form.append("profile_picture", formData.profile_picture);
       if (formData.role) form.append("role", formData.role);
 
@@ -61,7 +63,6 @@ export default function OnboardingPage() {
         form.append("client_profile.business_description", formData.business_description || "");
         form.append("client_profile.website", formData.website || "");
       }
-
       await updateUserProfile(form);
 
       window.location.href = "/dashboard";

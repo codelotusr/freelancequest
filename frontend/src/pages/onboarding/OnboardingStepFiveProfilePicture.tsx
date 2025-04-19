@@ -1,11 +1,11 @@
-import { Label, Button, Avatar } from "flowbite-react";
+import { Button, Avatar } from "flowbite-react";
 import { useState, useEffect, DragEvent } from "react";
-import { FormData } from "../../components/OnboardingFormData";
+import { OnboardingFormData } from "../../components/OnboardingFormData";
 import { HiUpload } from "react-icons/hi";
 
 interface Props {
-  formData: FormData;
-  onChange: (updates: Partial<FormData>) => void;
+  formData: OnboardingFormData;
+  onChange: (updates: Partial<OnboardingFormData>) => void;
   onFinish: () => void;
   onBack: () => void;
 }

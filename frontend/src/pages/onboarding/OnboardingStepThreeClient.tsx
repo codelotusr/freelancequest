@@ -1,10 +1,10 @@
 import { Label, TextInput, Textarea, Button, Checkbox } from "flowbite-react";
-import { FormData } from "../../components/OnboardingFormData";
+import { OnboardingFormData } from "../../components/OnboardingFormData";
 import { FaBuilding, FaInfoCircle, FaGlobe } from "react-icons/fa";
 
 interface Props {
-  formData: FormData;
-  onChange: (updates: Partial<FormData>) => void;
+  formData: OnboardingFormData
+  onChange: (updates: Partial<OnboardingFormData>) => void;
   onNext: () => void;
   onBack: () => void;
 }

@@ -53,7 +53,7 @@ class CustomRegisterSerializer(DjRegisterSerializer):
 class FreelancerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = FreelancerProfile
-        fields = ["bio", "skills", "xp", "portfolio_links"]
+        fields = ["bio", "skills", "portfolio_links"]
 
 
 class ClientProfileSerializer(serializers.ModelSerializer):
@@ -63,6 +63,7 @@ class ClientProfileSerializer(serializers.ModelSerializer):
 
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
+    username = serializers.SlugField(required=False, allow_null=True, allow_blank=True)
     address = AddressSerializer(read_only=True)
     freelancer_profile = FreelancerProfileSerializer(read_only=True)
     client_profile = ClientProfileSerializer(read_only=True)
@@ -73,10 +74,10 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         fields = [
             "pk",
             "email",
+            "username",
             "first_name",
             "last_name",
             "profile_picture",
-            "phone_number",
             "address",
             "role",
             "freelancer_profile",
@@ -87,9 +88,8 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
     def update(self, instance, validated_data):
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
-        instance.phone_number = validated_data.get(
-            "phone_number", instance.phone_number
-        )
+        instance.username = self.initial_data.get("username", instance.username)
+
         instance.role = validated_data.get("role", instance.role)
 
         profile_picture = validated_data.get("profile_picture")

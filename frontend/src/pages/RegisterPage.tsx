@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/authApi";
-import Header from "../components/Header";
 import { Label, TextInput, Button, Card } from "flowbite-react";
 import toast from "react-hot-toast";
 import { HiMail } from "react-icons/hi";

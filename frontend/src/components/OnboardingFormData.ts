@@ -1,8 +1,9 @@
 export type Role = "freelancer" | "client";
 
-export interface FormData {
+export interface OnboardingFormData {
   first_name: string;
   last_name: string;
+  username: string;
   role: Role | "";
   profile_picture: File | null;
 

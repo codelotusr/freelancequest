@@ -1,30 +1,56 @@
 import { Label, TextInput, Button } from "flowbite-react";
-import { FormData } from "../../components/OnboardingFormData";
+import { OnboardingFormData } from "../../components/OnboardingFormData";
 import { HiOutlineUser } from "react-icons/hi";
 import { useState } from "react";
 
 interface Props {
-  formData: FormData;
-  onChange: (updates: Partial<FormData>) => void;
+  formData: OnboardingFormData;
+  onChange: (updates: Partial<OnboardingFormData>) => void;
   onNext: () => void;
 }
 
-export default function OnboardingStepOneName({ formData, onChange, onNext }: Props) {
-  const [errors, setErrors] = useState({ first_name: "", last_name: "" });
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/--+/g, "-");
+}
 
-  const handleContinue = () => {
+export default function OnboardingStepOneName({ formData, onChange, onNext }: Props) {
+  const [errors, setErrors] = useState({ first_name: "", last_name: "", username: "", });
+
+  const handleContinue = async () => {
     const newErrors = {
       first_name: formData.first_name.trim() ? "" : "Vardas yra privalomas",
       last_name: formData.last_name.trim() ? "" : "Pavardė yra privaloma",
+      username: formData.username.trim() ? "" : "Slapyvardis yra privalomas",
     };
 
     setErrors(newErrors);
 
-    const hasErrors = Object.values(newErrors).some((err) => err !== "");
-    if (!hasErrors) {
+    const hasClientErrors = Object.values(newErrors).some((err) => err !== "");
+    if (hasClientErrors) return;
+
+    try {
+      const res = await fetch(
+        `/api/users/check-username/?username=${formData.username.trim()}`
+      );
+      if (!res.ok) {
+        throw new Error("Toks slapyvardis jau užimtas ar rezervuotas.");
+      }
+
       onNext();
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        username: "Toks slapyvardis jau užimtas ar rezervuotas.",
+      }));
+      console.error(err);
     }
   };
+
 
   return (
     <div className="flex flex-col gap-6 items-center text-center">
@@ -46,6 +72,7 @@ export default function OnboardingStepOneName({ formData, onChange, onNext }: Pr
             <p className="mt-1 text-sm text-red-500">{errors.first_name}</p>
           )}
         </div>
+
         <div>
           <Label htmlFor="last_name" className="mb-1 block text-sm font-medium text-gray-200">
             Pavardė
@@ -62,11 +89,39 @@ export default function OnboardingStepOneName({ formData, onChange, onNext }: Pr
           )}
         </div>
 
-        <Button onClick={handleContinue} disabled={!formData.first_name.trim() || !formData.last_name.trim()} className="mt-2">
+        <div>
+          <Label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-200">
+            Slapyvardis
+          </Label>
+          <TextInput
+            id="username"
+            value={formData.username}
+            onChange={(e) => onChange({ username: slugify(e.target.value) })}
+            placeholder="pvz. deividas-smaliukas"
+            color={errors.username ? "failure" : undefined}
+          />
+          {formData.username && (
+            <p className="mt-1 text-sm text-gray-400">
+              Bus matoma kaip: <code>{formData.username}</code>
+            </p>
+          )}
+          {errors.username && (
+            <p className="mt-1 text-sm text-red-500">{errors.username}</p>
+          )}
+        </div>
+
+        <Button
+          onClick={handleContinue}
+          disabled={
+            !formData.first_name.trim() ||
+            !formData.last_name.trim() ||
+            !formData.username.trim()
+          }
+          className="mt-2"
+        >
           Toliau
         </Button>
       </div>
     </div>
   );
 }
-

@@ -1,11 +1,11 @@
 import { Button } from "flowbite-react";
 import { FaUserTie, FaBriefcase } from "react-icons/fa";
-import { FormData, Role } from "../../components/OnboardingFormData"
+import { OnboardingFormData, Role } from "../../components/OnboardingFormData"
 
 
 interface Props {
-  formData: FormData;
-  onChange: (updates: Partial<FormData>) => void;
+  formData: OnboardingFormData;
+  onChange: (updates: Partial<OnboardingFormData>) => void;
   onNext: () => void;
   onBack: () => void;
 }

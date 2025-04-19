@@ -42,10 +42,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
+    username = models.SlugField(max_length=30, unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
     profile_picture = models.ImageField(upload_to="profiles/", blank=True, null=True)
-    phone_number = models.CharField(max_length=20, blank=True)
     address = models.OneToOneField(
         Address, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects: "UserManager"
 
     def __str__(self):
-        return self.email
+        return self.username or self.email
 
 
 class FreelancerProfile(models.Model):
@@ -91,7 +91,6 @@ class FreelancerProfile(models.Model):
     )
     bio = models.TextField(blank=True)
     skills = models.JSONField(default=list)
-    xp = models.IntegerField(default=0)
     portfolio_links = models.JSONField(default=list, blank=True)
 
 

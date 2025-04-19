@@ -27,6 +27,7 @@ djangorestframework-simplejwt = {extras = ["django"], version = "^5.5.0"}
 django-allauth = "^65.7.0"
 dj-rest-auth = "^7.0.1"
 pillow = "^11.2.1"
+requests = "^2.32.3"
 
 
 [tool.poetry.group.dev.dependencies]

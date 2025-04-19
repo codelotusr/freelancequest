@@ -1,12 +1,12 @@
 import { Label, TextInput, Textarea, Button } from "flowbite-react";
-import { FormData } from "../../components/OnboardingFormData";
+import { OnboardingFormData } from "../../components/OnboardingFormData";
 import { useState } from "react";
 import { FaTools, FaLink, FaUserEdit } from "react-icons/fa";
 import { HiPlus, HiTrash } from "react-icons/hi";
 
 interface Props {
-  formData: FormData;
-  onChange: (updates: Partial<FormData>) => void;
+  formData: OnboardingFormData;
+  onChange: (updates: Partial<OnboardingFormData>) => void;
   onNext: () => void;
   onBack: () => void;
 }
