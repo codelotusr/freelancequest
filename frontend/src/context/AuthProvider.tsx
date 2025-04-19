@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   };
+
   const loginUser = async (email: string, password: string) => {
     await login({ email, password });
     await fetchUser();
@@ -51,11 +52,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    const hasAuthCookies = () => {
-      return document.cookie.includes("access=") && document.cookie.includes("refresh=");
+    const hasRefreshCookie = () => {
+      return document.cookie.includes("refresh=");
     };
 
-    if (hasAuthCookies()) {
+    if (hasRefreshCookie()) {
       fetchUser();
     } else {
       setLoading(false);

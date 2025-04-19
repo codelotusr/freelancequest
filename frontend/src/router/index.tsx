@@ -9,6 +9,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import AuthLayout from "../layouts/AuthLayout";
 import PublicRoute from "./PublicRoute";
 import OnboardingLayout from "../layouts/OnboardingLayout";
+import DashboardPage from "../pages/DashboardPage";
 
 export default function AppRoutes() {
   return (
@@ -26,6 +27,7 @@ export default function AppRoutes() {
         </Route>
         <Route element={<MainLayout />}>
           <Route path="/temp" element={<TempPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
       </Route>
     </Routes >
