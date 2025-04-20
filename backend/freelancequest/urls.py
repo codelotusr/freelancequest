@@ -31,6 +31,7 @@ urlpatterns = [
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("api/auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
     path("auth/token/refresh/", get_refresh_view().as_view(), name="token_refresh"),
+    path("api/", include("gigs.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",

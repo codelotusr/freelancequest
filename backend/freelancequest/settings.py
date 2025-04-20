@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "core",
     "users",
     "gamification.apps.GamificationConfig",
+    "gigs",
 ]
 
 MIDDLEWARE = [
