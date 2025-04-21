@@ -1,16 +1,37 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import ClientProfile, FreelancerProfile, User
+from .models import Address, ClientProfile, FreelancerProfile, User
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ["email"]
-    list_display = ["email", "is_staff", "is_superuser"]
+    list_display = [
+        "email",
+        "username",
+        "first_name",
+        "last_name",
+        "role",
+        "is_staff",
+        "is_superuser",
+    ]
     search_fields = ["email"]
     fieldsets = (
         (None, {"fields": ("email", "password")}),
+        (
+            "Personal info",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "username",
+                    "role",
+                    "profile_picture",
+                    "address",
+                )
+            },
+        ),
         (
             "Permissions",
             {
@@ -41,5 +62,16 @@ class UserAdmin(BaseUserAdmin):
     readonly_fields = ("date_joined",)
 
 
-admin.site.register(FreelancerProfile)
-admin.site.register(ClientProfile)
+@admin.register(FreelancerProfile)
+class FreelancerAdmin(admin.ModelAdmin):
+    list_display = ("user", "bio", "skills")
+
+
+@admin.register(ClientProfile)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ("user", "organization", "business_description", "website")
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ("street", "city", "postal_code", "country")

@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import GamificationProfile
+
+
+@admin.register(GamificationProfile)
+class GamificationProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "xp", "level")
