@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import DarkModeToggle from "./DarkModeToggle";
 import LogoutButton from "../components/LogoutButton"
 import { FaFlask, FaLevelUpAlt } from "react-icons/fa";
-import { Level } from 'lucide-react';
 import { useAuth } from "../context/useAuth"
 
 interface HeaderProps {

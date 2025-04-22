@@ -17,6 +17,7 @@ class GigSerializer(serializers.ModelSerializer):
     review = ReviewSerializer(required=False, allow_null=True)
     client_name = serializers.SerializerMethodField()
     freelancer_name = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = Gig
@@ -24,7 +25,9 @@ class GigSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "price",
             "status",
+            "status_display",
             "client",
             "client_name",
             "freelancer",
