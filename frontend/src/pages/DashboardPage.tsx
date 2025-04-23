@@ -17,6 +17,7 @@ import {
 } from "react-icons/fa";
 import GigModal from "../components/GigModal";
 import DeleteGigModal from "../components/DeleteGigModal"
+import ApplicantsModal from "../components/ApplicantsModal";
 import api from "../services/axios";
 
 export default function DashboardPage() {
@@ -35,6 +36,9 @@ export default function DashboardPage() {
   const [isGigModalOpen, setIsGigModalOpen] = useState(false);
   const [selectedGig, setSelectedGig] = useState<any | null>(null);
   const [gigToDelete, setGigToDelete] = useState<any | null>(null);
+  const [isApplicantsModalOpen, setIsApplicantsModalOpen] = useState(false);
+  const [selectedApplicantsGig, setSelectedApplicantsGig] = useState<any | null>(null);
+
 
   const handleGigSubmit = async (gigData: {
     title: string;
@@ -73,6 +77,31 @@ export default function DashboardPage() {
     }
   };
 
+  const handleConfirmFreelancer = async (freelancerId: number) => {
+    if (!selectedApplicantsGig) return;
+    try {
+      await api.post(`/gigs/${selectedApplicantsGig.id}/confirm/`, {
+        freelancer_id: freelancerId,
+      });
+      toast.success("Specialistas pasirinktas!");
+      setIsApplicantsModalOpen(false);
+      await fetchGigs();
+    } catch (err) {
+      toast.error("Nepavyko pasirinkti specialisto");
+      console.error(err);
+    }
+  };
+
+  const handleRejectApplication = async (freelancerId: number) => {
+    try {
+      await api.delete(`/gigs/${selectedGig.id}/applications/${freelancerId}/`);
+      toast.success("Paraiška atmesta");
+      await fetchGigs();
+    } catch (err) {
+      toast.error("Nepavyko atmesti paraiškos");
+      console.error(err);
+    }
+  };
 
   if (loading || !user) return null;
 
@@ -84,63 +113,66 @@ export default function DashboardPage() {
         </h1>
 
         {user.role === "freelancer" && (
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaBriefcase /> Tavo darbai
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Vykdomi darbai čionais:(
-              </p>
-            </Card>
+          <div className="space-y-10">
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              <FaBriefcase /> Tavo Freelancerio Pultas
+            </h2>
 
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaTasks /> Rekomenduojami pasiūlymai
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Rekomenduojami pasiūlymai (arba tiesiog random lol)
-              </p>
-            </Card>
-
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaFire /> Misijos
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Misijos, yay, xp, yay
-              </p>
-            </Card>
-
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaTrophy /> Turnyrai
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                turnyyyrai, kodėl? nežinau, gal kieta
-              </p>
-            </Card>
-
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaChartLine /> Lyderių lentelė
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                idk, gal ir nereikia, gal atskirai įdėti, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa nežinau
-              </p>
-            </Card>
-
-            <Card className="h-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 dark:text-white flex items-center gap-2">
-                <FaCommentDots className="text-lg" />
-                Atsiliepimai
-              </h2>
-
-              <p className="text-gray-600 dark:text-gray-300">
-                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                aaaaaaaaaaaa
-              </p>
-            </Card>
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+              {/* Card Component */}
+              {[
+                {
+                  title: "Vykdomi darbai",
+                  icon: <FaBriefcase className="text-blue-500 text-2xl" />,
+                  description: "Čia matysi visus darbus, kuriuos šiuo metu vykdai.",
+                  buttonText: "Peržiūrėti darbus",
+                  buttonColor: "blue",
+                  onClick: () => console.log("Go to Vykdomi darbai"),
+                },
+                {
+                  title: "Tavo paraiškos",
+                  icon: <FaClipboardCheck className="text-purple-500 text-2xl" />,
+                  description: "Peržiūrėk pasiūlymus, į kuriuos esi pateikęs paraiškas.",
+                  buttonText: "Peržiūrėti paraiškas",
+                  buttonColor: "purple",
+                  onClick: () => console.log("Go to Paraiškos"),
+                },
+                {
+                  title: "Misijos",
+                  icon: <FaFire className="text-red-500 text-2xl" />,
+                  description: "Vykdyk misijas ir gauk XP! Dieninės, savaitinės ir daugiau.",
+                  buttonText: "Eiti į misijas",
+                  buttonColor: "green",
+                  onClick: () => console.log("Go to Misijos"),
+                },
+                {
+                  title: "Atsiliepimai",
+                  icon: <FaCommentDots className="text-yellow-500 text-2xl" />,
+                  description: "Peržiūrėk klientų atsiliepimus apie savo darbus.",
+                  buttonText: "Peržiūrėti atsiliepimus",
+                  buttonColor: "gray",
+                  onClick: () => console.log("Go to Atsiliepimai"),
+                },
+              ].map((card, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col justify-between bg-gradient-to-br from-gray-800 via-gray-900 to-black border border-gray-700 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 hover:ring-2 hover:ring-violet-500"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    {card.icon}
+                    <h3 className="text-2xl font-bold text-white">{card.title}</h3>
+                  </div>
+                  <p className="text-gray-300 mb-8 text-[15px]">{card.description}</p>
+                  <Button
+                    color={card.buttonColor as any}
+                    onClick={card.onClick}
+                    className="w-full text-sm py-2"
+                  >
+                    {card.buttonText}
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -180,29 +212,46 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex justify-end gap-2 mt-6">
-                        <Button
-                          size="xs"
-                          color="yellow"
-                          onClick={() => {
-                            setSelectedGig(gig);
-                            setIsGigModalOpen(true);
-                          }}
-                          className="flex items-center gap-1"
-                        >
-                          <FaEdit className="text-xs" />
-                          Redaguoti
-                        </Button>
-                        <Button
-                          size="xs"
-                          color="red"
-                          onClick={() => setGigToDelete(gig)}
-                          className="flex items-center gap-1"
-                        >
-                          <FaTrashAlt className="text-xs" />
-                          Ištrinti
-                        </Button>
+                      <div className="flex justify-end mt-6">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end w-full sm:w-auto">
+                          {gig.applications?.length > 0 && (
+                            <Button
+                              color="purple"
+                              onClick={() => {
+                                setSelectedApplicantsGig(gig);
+                                setIsApplicantsModalOpen(true);
+                              }}
+                              className="flex items-center gap-1 text-sm py-2 justify-center"
+                            >
+                              <FaUserTie className="text-xs" />
+                              Peržiūrėti paraiškas
+                            </Button>
+                          )}
+
+                          <Button
+                            color="yellow"
+                            onClick={() => {
+                              setSelectedGig(gig);
+                              setIsGigModalOpen(true);
+                            }}
+                            className="flex items-center gap-1 text-sm py-2 justify-center"
+                          >
+                            <FaEdit className="text-xs" />
+                            Redaguoti
+                          </Button>
+
+                          <Button
+                            color="red"
+                            onClick={() => setGigToDelete(gig)}
+                            className="flex items-center gap-1 text-sm py-2 justify-center"
+                          >
+                            <FaTrashAlt className="text-xs" />
+                            Ištrinti
+                          </Button>
+                        </div>
                       </div>
+
+
                     </div>
                   ))}
                 </div>
@@ -236,6 +285,14 @@ export default function DashboardPage() {
               onClose={() => setGigToDelete(null)}
               onConfirm={confirmGigDelete}
               gigTitle={gigToDelete?.title}
+            />
+
+            <ApplicantsModal
+              gig={selectedApplicantsGig}
+              isOpen={isApplicantsModalOpen}
+              onClose={() => setIsApplicantsModalOpen(false)}
+              onConfirm={handleConfirmFreelancer}
+              onReject={handleRejectApplication}
             />
 
           </>

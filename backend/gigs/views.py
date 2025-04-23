@@ -1,8 +1,8 @@
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Gig
+from .models import Application, Gig
 from .serializers import GigSerializer, ReviewSerializer
 
 
@@ -12,7 +12,11 @@ class IsClientOrReadOnly(permissions.BasePermission):
 
 
 class GigViewSet(viewsets.ModelViewSet):
-    queryset = Gig.objects.all().select_related("client", "freelancer")
+    queryset = (
+        Gig.objects.all()
+        .select_related("client", "freelancer")
+        .prefetch_related("applications__freelancer")
+    )
     serializer_class = GigSerializer
     permission_classes = [permissions.IsAuthenticated, IsClientOrReadOnly]
 
@@ -26,7 +30,7 @@ class GigViewSet(viewsets.ModelViewSet):
         gig = self.get_object()
 
         if gig.status != "available":
-            return Response({"detail": "Gig is not available."}, status=400)
+            return Response({"detail": "Pasiūlymas nėra atviras."}, status=400)
 
         gig.freelancer = request.user
         gig.status = "in_progress"
@@ -42,19 +46,22 @@ class GigViewSet(viewsets.ModelViewSet):
 
         if gig.client != request.user:
             return Response(
-                {"detail": "Only the client can mark the gig as completed."}, status=403
+                {"detail": "Only the client can mark the gig as completed."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         if gig.status != "in_progress":
             return Response(
                 {"detail": "Only in-progress gigs can be marked as completed."},
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         gig.status = "completed"
         gig.save()
 
-        return Response({"detail": "Gig marked as completed."}, status=200)
+        return Response(
+            {"detail": "Darbas pažymėtas kaip atliktas."}, status=status.HTTP_200_OK
+        )
 
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
@@ -64,21 +71,114 @@ class GigViewSet(viewsets.ModelViewSet):
 
         if gig.client != request.user:
             return Response(
-                {"detail": "Only the client can leave a review."}, status=403
+                {"detail": "Tik klientas gali palikti atsiliepimą."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         if gig.status != "completed":
             return Response(
-                {"detail": "You can only review completed gigs."}, status=400
+                {"detail": "Galima pateikti atsiliepimą tik jau padarytams darbams."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if hasattr(gig, "review"):
             return Response(
-                {"detail": "Review already exists for this gig."}, status=400
+                {"detail": "Atsiliepimas šiam darbui jau egzistuoją."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = ReviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(gig=gig)
 
-        return Response(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
+    def apply(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.status != "available":
+            return Response(
+                {"detail": "Negalima aplikuoti šiam darbui"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if Application.objects.filter(gig=gig, freelancer=request.user).exists():
+            return Response(
+                {"detail": "Jūs jau esate pateikę paraišką."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if gig.freelancer:
+            return Response(
+                {"detail": "Šis darbas jau paskirtas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        Application.objects.create(gig=gig, freelancer=request.user)
+        return Response(
+            {"detail": "Paraiška pateikta."}, status=status.HTTP_201_CREATED
+        )
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
+    def confirm(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user:
+            return Response(
+                {"detail": "Tik klientas gali pasirinkti specialistą."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if gig.status != "available":
+            return Response(
+                {"detail": "Šis pasiūlymas jau paskirtas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        freelancer_id = request.data.get("freelancer_id")
+        try:
+            application = Application.objects.get(gig=gig, freelancer_id=freelancer_id)
+        except Application.DoesNotExist:
+            return Response(
+                {"detail": "Paraiška nerasta."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        gig.freelancer = application.freelancer
+        gig.status = "in_progress"
+        gig.save()
+        Application.objects.filter(gig=gig).exclude(
+            freelancer=application.freelancer
+        ).delete()
+
+        return Response(GigSerializer(gig, context=self.get_serializer_context()).data)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="applications/(?P<freelancer_id>[^/.]+)",
+    )
+    def delete_application(self, request, pk=None, freelancer_id=None):
+        gig = self.get_object()
+
+        # Only the client who owns the gig can remove applications
+        if gig.client != request.user:
+            return Response(
+                {"detail": "Tik klientas gali atmesti paraiškas."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        deleted, _ = gig.applications.filter(freelancer_id=freelancer_id).delete()
+        if deleted == 0:
+            return Response(
+                {"detail": "Paraiška nerasta."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            {"detail": "Paraiška atmesta."}, status=status.HTTP_204_NO_CONTENT
+        )

@@ -5,6 +5,7 @@ from django.db import models
 class Gig(models.Model):
     STATUS_CHOICES = [
         ("available", "Laisvas"),
+        ("pending", "Laukiama patvirtinimo"),
         ("in_progress", "Vykdomas"),
         ("completed", "Įvykdytas"),
         ("cancelled", "Atšauktas"),
@@ -41,3 +42,28 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.gig.title}"
+
+
+class Application(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Laukiama"),
+        ("accepted", "Patvirtinta"),
+        ("rejected", "Atmesta"),
+    ]
+
+    applicant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="gig_applications",
+    )
+    gig = models.ForeignKey(
+        "gigs.Gig", on_delete=models.CASCADE, related_name="applications"
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("applicant", "gig")
+
+    def __str__(self):
+        return f"{self.applicant} -> {self.gig.title} ({self.status})"

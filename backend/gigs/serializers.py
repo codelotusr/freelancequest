@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from gigs.models import Gig, Review
+from gigs.models import Application, Gig, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -13,11 +13,43 @@ class ReviewSerializer(serializers.ModelSerializer):
         }
 
 
+class ApplicationSerializer(serializers.ModelSerializer):
+    applicant_name = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = Application
+        fields = [
+            "id",
+            "gig",
+            "applicant",
+            "applicant_name",
+            "status",
+            "status_display",
+            "applied_at",
+        ]
+        read_only_fields = [
+            "id",
+            "applicant",
+            "applied_at",
+            "applicant_name",
+            "status_display",
+        ]
+
+    def get_applicant_name(self, obj):
+        return f"{obj.applicant.first_name} {obj.applicant.last_name}"
+
+    def create(self, validated_data):
+        validated_data["applicant"] = self.context["request"].user
+        return super().create(validated_data)
+
+
 class GigSerializer(serializers.ModelSerializer):
     review = ReviewSerializer(required=False, allow_null=True)
     client_name = serializers.SerializerMethodField()
     freelancer_name = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    applications = ApplicationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Gig
@@ -33,6 +65,7 @@ class GigSerializer(serializers.ModelSerializer):
             "freelancer",
             "freelancer_name",
             "review",
+            "applications",
             "created_at",
             "updated_at",
         ]

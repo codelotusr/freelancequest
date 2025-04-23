@@ -10,19 +10,20 @@ def check_username(request):
     username = request.query_params.get("username", "").strip().lower()
     if not username:
         return Response(
-            {"detail": "Username is required."}, status=status.HTTP_400_BAD_REQUEST
+            {"detail": "Slapyvardis yra privalomas."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     reserved = {"admin", "api", "auth", "login", "logout", "register", "dashboard"}
     if username in reserved:
         return Response(
-            {"detail": "This username is reserved."}, status=status.HTTP_409_CONFLICT
+            {"detail": "Šis slapyvardis rezervuotas."}, status=status.HTTP_409_CONFLICT
         )
 
     exists = User.objects.filter(username__iexact=username).exists()
     if exists:
         return Response(
-            {"detail": "This username is already taken."},
+            {"detail": "Šis slapyvardis jau užimtas."},
             status=status.HTTP_409_CONFLICT,
         )
 
