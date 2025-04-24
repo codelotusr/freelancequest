@@ -3,11 +3,8 @@ import { useState, useEffect } from "react";
 import { Card, Button } from "flowbite-react";
 import toast from "react-hot-toast";
 import {
-  FaTasks,
   FaBriefcase,
   FaFire,
-  FaTrophy,
-  FaChartLine,
   FaCommentDots,
   FaMoneyBillWave,
   FaClipboardCheck,
@@ -55,7 +52,6 @@ export default function DashboardPage() {
         toast.success("Pasiūlymas sėkmingai sukurtas!");
       }
       await fetchGigs();
-      toast.success("Pasiūlymas sėkmingai sukurtas!");
       setIsGigModalOpen(false);
       console.log("Gig created:", gigData);
     } catch (err) {
@@ -114,12 +110,7 @@ export default function DashboardPage() {
 
         {user.role === "freelancer" && (
           <div className="space-y-10">
-            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-              <FaBriefcase /> Tavo Freelancerio Pultas
-            </h2>
-
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
-              {/* Card Component */}
               {[
                 {
                   title: "Vykdomi darbai",
@@ -127,7 +118,6 @@ export default function DashboardPage() {
                   description: "Čia matysi visus darbus, kuriuos šiuo metu vykdai.",
                   buttonText: "Peržiūrėti darbus",
                   buttonColor: "blue",
-                  onClick: () => console.log("Go to Vykdomi darbai"),
                 },
                 {
                   title: "Tavo paraiškos",
@@ -135,15 +125,13 @@ export default function DashboardPage() {
                   description: "Peržiūrėk pasiūlymus, į kuriuos esi pateikęs paraiškas.",
                   buttonText: "Peržiūrėti paraiškas",
                   buttonColor: "purple",
-                  onClick: () => console.log("Go to Paraiškos"),
                 },
                 {
                   title: "Misijos",
                   icon: <FaFire className="text-red-500 text-2xl" />,
-                  description: "Vykdyk misijas ir gauk XP! Dieninės, savaitinės ir daugiau.",
-                  buttonText: "Eiti į misijas",
+                  description: "Galll čia rodyti daily misijas, hmm",
+                  buttonText: "Peržiūrėti misijas",
                   buttonColor: "green",
-                  onClick: () => console.log("Go to Misijos"),
                 },
                 {
                   title: "Atsiliepimai",
@@ -151,7 +139,6 @@ export default function DashboardPage() {
                   description: "Peržiūrėk klientų atsiliepimus apie savo darbus.",
                   buttonText: "Peržiūrėti atsiliepimus",
                   buttonColor: "gray",
-                  onClick: () => console.log("Go to Atsiliepimai"),
                 },
               ].map((card, index) => (
                 <div
@@ -188,11 +175,11 @@ export default function DashboardPage() {
                   {gigs.map((gig) => (
                     <div
                       key={gig.id}
-                      className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-2xl p-6 shadow-md hover:shadow-xl ring-1 ring-transparent hover:ring-violet-500 transition-all duration-300 flex flex-col justify-between"
+                      className="flex flex-col justify-between bg-gradient-to-br from-gray-800 via-gray-900 to-black border border-gray-700 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 hover:ring-2 hover:ring-violet-500"
                     >
                       <div className="mb-6 border-b border-gray-700 pb-4">
-                        <h3 className="text-2xl font-semibold text-white truncate">{gig.title}</h3>
-                        <p className={`text-gray-400 text-base mt-2 truncate`}>
+                        <h3 className="text-2xl font-bold text-white truncate">{gig.title}</h3>
+                        <p className="text-gray-300 text-base mt-2 truncate">
                           {gig.description}
                         </p>
                       </div>
@@ -213,7 +200,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex justify-end mt-6">
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end w-full sm:w-auto">
                           {gig.applications?.length > 0 && (
                             <Button
                               color="purple"
@@ -221,7 +208,7 @@ export default function DashboardPage() {
                                 setSelectedApplicantsGig(gig);
                                 setIsApplicantsModalOpen(true);
                               }}
-                              className="flex items-center gap-1 text-sm py-2 justify-center"
+                              className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
                             >
                               <FaUserTie className="text-xs" />
                               Peržiūrėti paraiškas
@@ -234,7 +221,7 @@ export default function DashboardPage() {
                               setSelectedGig(gig);
                               setIsGigModalOpen(true);
                             }}
-                            className="flex items-center gap-1 text-sm py-2 justify-center"
+                            className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
                           >
                             <FaEdit className="text-xs" />
                             Redaguoti
@@ -243,19 +230,16 @@ export default function DashboardPage() {
                           <Button
                             color="red"
                             onClick={() => setGigToDelete(gig)}
-                            className="flex items-center gap-1 text-sm py-2 justify-center"
+                            className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
                           >
                             <FaTrashAlt className="text-xs" />
                             Ištrinti
                           </Button>
                         </div>
                       </div>
-
-
                     </div>
                   ))}
-                </div>
-              ) : (
+                </div>) : (
                 <p className="text-gray-500 dark:text-gray-400 italic">
                   Kol kas nepaskelbėte jokių pasiūlymų.
                 </p>

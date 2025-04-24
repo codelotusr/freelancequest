@@ -58,6 +58,42 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
 
         {variant === "main" && user && (
           <>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                color="gray"
+                onClick={() => navigate("/dashboard")}
+                className="text-sm min-w-[120px]"
+              >
+                Pagrindinis
+              </Button>
+              <Button
+                size="sm"
+                color="blue"
+                onClick={() => navigate("/gigs")}
+                className="text-sm min-w-[120px]"
+              >
+                Visi darbai
+              </Button>
+              <Button
+                size="sm"
+                color="green"
+                onClick={() => navigate("/missions")}
+                className="text-sm min-w-[120px]"
+              >
+                Misijos
+              </Button>
+              <Button
+                size="sm"
+                color="purple"
+                onClick={() => navigate("/tournaments")}
+                className="text-sm min-w-[120px]"
+              >
+                Turnyrai
+              </Button>
+            </div>
+
+
             <div className="text-right">
               <p className="text-sm font-semibold">
                 {user.first_name} {user.last_name}
