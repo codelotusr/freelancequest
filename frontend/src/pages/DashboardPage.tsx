@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const [gigToDelete, setGigToDelete] = useState<any | null>(null);
   const [isApplicantsModalOpen, setIsApplicantsModalOpen] = useState(false);
   const [selectedApplicantsGig, setSelectedApplicantsGig] = useState<any | null>(null);
-
+  const [activeModal, setActiveModal] = useState<"usersGigs" | "usersApplications" | "usersMissions" | "usersReviews" | null>(null);
 
   const handleGigSubmit = async (gigData: {
     title: string;
@@ -118,6 +118,7 @@ export default function DashboardPage() {
                   description: "Čia matysi visus darbus, kuriuos šiuo metu vykdai.",
                   buttonText: "Peržiūrėti darbus",
                   buttonColor: "blue",
+                  modalType: "usersGigs",
                 },
                 {
                   title: "Tavo paraiškos",
@@ -125,6 +126,7 @@ export default function DashboardPage() {
                   description: "Peržiūrėk pasiūlymus, į kuriuos esi pateikęs paraiškas.",
                   buttonText: "Peržiūrėti paraiškas",
                   buttonColor: "purple",
+                  modalType: "usersApplications",
                 },
                 {
                   title: "Misijos",
@@ -132,6 +134,7 @@ export default function DashboardPage() {
                   description: "Galll čia rodyti daily misijas, hmm",
                   buttonText: "Peržiūrėti misijas",
                   buttonColor: "green",
+                  modalType: "usersMissions",
                 },
                 {
                   title: "Atsiliepimai",
@@ -139,6 +142,7 @@ export default function DashboardPage() {
                   description: "Peržiūrėk klientų atsiliepimus apie savo darbus.",
                   buttonText: "Peržiūrėti atsiliepimus",
                   buttonColor: "gray",
+                  modalType: "usersReviews",
                 },
               ].map((card, index) => (
                 <div
@@ -152,7 +156,7 @@ export default function DashboardPage() {
                   <p className="text-gray-300 mb-8 text-[15px]">{card.description}</p>
                   <Button
                     color={card.buttonColor as any}
-                    onClick={card.onClick}
+                    onClick={() => setActiveModal(card.modalType)}
                     className="w-full text-sm py-2"
                   >
                     {card.buttonText}
@@ -200,39 +204,42 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex justify-end mt-6">
-                        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end w-full sm:w-auto">
+                        <div className="flex gap-2 w-full sm:w-auto">
                           {gig.applications?.length > 0 && (
                             <Button
                               color="purple"
+                              size="xs"
                               onClick={() => {
                                 setSelectedApplicantsGig(gig);
                                 setIsApplicantsModalOpen(true);
                               }}
-                              className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
+                              className="flex items-center gap-1 px-3 py-1.5"
                             >
-                              <FaUserTie className="text-xs" />
-                              Peržiūrėti paraiškas
+                              <FaUserTie className="text-sm" />
+                              Paraiškos
                             </Button>
                           )}
 
                           <Button
                             color="yellow"
+                            size="xs"
                             onClick={() => {
                               setSelectedGig(gig);
                               setIsGigModalOpen(true);
                             }}
-                            className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
+                            className="flex items-center gap-1 px-3 py-1.5"
                           >
-                            <FaEdit className="text-xs" />
+                            <FaEdit className="text-sm" />
                             Redaguoti
                           </Button>
 
                           <Button
                             color="red"
+                            size="xs"
                             onClick={() => setGigToDelete(gig)}
-                            className="flex items-center gap-1 w-full sm:w-auto text-sm py-2 justify-center"
+                            className="flex items-center gap-1 px-3 py-1.5"
                           >
-                            <FaTrashAlt className="text-xs" />
+                            <FaTrashAlt className="text-sm" />
                             Ištrinti
                           </Button>
                         </div>

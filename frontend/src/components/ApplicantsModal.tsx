@@ -2,17 +2,14 @@ import { Modal, Button } from "flowbite-react";
 import { FaUser, FaCheck, FaEnvelope, FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-type Freelancer = {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-};
-
 type Application = {
   id: number;
-  freelancer: Freelancer;
+  applicant: number;
+  applicant_name: string;
+  applicant_username: string;
+  status: string;
+  status_display: string;
+  applied_at: string;
 };
 
 interface ApplicantsModalProps {
@@ -53,24 +50,23 @@ export default function ApplicantsModal({
           </p>
         ) : (
           <ul className="space-y-4">
-            {applications.map(({ id, freelancer }) => (
+            {applications.map((application) => (
               <li
-                key={id}
+                key={application.id}
                 className="flex justify-between items-center border-b border-gray-700 pb-2"
               >
                 <div className="text-sm text-gray-100">
                   <p className="font-medium">
                     <FaUser className="inline-block mr-1 text-white" />
-                    {freelancer.first_name} {freelancer.last_name}
+                    {application.applicant_name}
                   </p>
-                  <p className="text-gray-400 text-xs">{freelancer.email}</p>
                 </div>
 
                 <div className="flex gap-2">
                   <Button
                     size="xs"
                     color="blue"
-                    onClick={() => navigate(`/profile/${freelancer.username}`)}
+                    onClick={() => navigate(`/profile/${application.applicant_username}`)}
                     className="flex items-center gap-1"
                   >
                     <FaExternalLinkAlt className="text-xs" />
@@ -79,18 +75,8 @@ export default function ApplicantsModal({
 
                   <Button
                     size="xs"
-                    color="gray"
-                    disabled
-                    className="flex items-center gap-1"
-                  >
-                    <FaEnvelope className="text-xs" />
-                    Žinutė
-                  </Button>
-
-                  <Button
-                    size="xs"
                     color="green"
-                    onClick={() => onConfirm(freelancer.id)}
+                    onClick={() => onConfirm(application.applicant)}
                     className="flex items-center gap-1"
                   >
                     <FaCheck className="text-xs" />
@@ -100,7 +86,7 @@ export default function ApplicantsModal({
                   <Button
                     size="xs"
                     color="red"
-                    onClick={() => onReject(freelancer.id)}
+                    onClick={() => onReject(application.applicant)}
                     className="flex items-center gap-1"
                   >
                     <FaTrashAlt className="text-xs" /> Atmesti

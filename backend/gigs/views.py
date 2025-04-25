@@ -1,7 +1,9 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .filters import GigFilter
 from .models import Application, Gig
 from .serializers import GigSerializer, ReviewSerializer
 
@@ -15,10 +17,12 @@ class GigViewSet(viewsets.ModelViewSet):
     queryset = (
         Gig.objects.all()
         .select_related("client", "freelancer")
-        .prefetch_related("applications__freelancer")
+        .prefetch_related("applications__applicant")
     )
     serializer_class = GigSerializer
     permission_classes = [permissions.IsAuthenticated, IsClientOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = GigFilter
 
     def perform_create(self, serializer):
         serializer.save(client=self.request.user)
@@ -105,7 +109,7 @@ class GigViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if Application.objects.filter(gig=gig, freelancer=request.user).exists():
+        if Application.objects.filter(gig=gig, applicant=request.user).exists():
             return Response(
                 {"detail": "Jūs jau esate pateikę paraišką."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -117,7 +121,7 @@ class GigViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        Application.objects.create(gig=gig, freelancer=request.user)
+        Application.objects.create(gig=gig, applicant=request.user)
         return Response(
             {"detail": "Paraiška pateikta."}, status=status.HTTP_201_CREATED
         )
@@ -142,17 +146,17 @@ class GigViewSet(viewsets.ModelViewSet):
 
         freelancer_id = request.data.get("freelancer_id")
         try:
-            application = Application.objects.get(gig=gig, freelancer_id=freelancer_id)
+            application = Application.objects.get(gig=gig, applicant_id=freelancer_id)
         except Application.DoesNotExist:
             return Response(
                 {"detail": "Paraiška nerasta."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        gig.freelancer = application.freelancer
+        gig.freelancer = application.applicant
         gig.status = "in_progress"
         gig.save()
         Application.objects.filter(gig=gig).exclude(
-            freelancer=application.freelancer
+            applicant=application.applicant
         ).delete()
 
         return Response(GigSerializer(gig, context=self.get_serializer_context()).data)
@@ -161,18 +165,37 @@ class GigViewSet(viewsets.ModelViewSet):
         detail=True,
         methods=["delete"],
         url_path="applications/(?P<freelancer_id>[^/.]+)",
+        permission_classes=[permissions.IsAuthenticated],
     )
     def delete_application(self, request, pk=None, freelancer_id=None):
         gig = self.get_object()
+        user = request.user
 
-        # Only the client who owns the gig can remove applications
-        if gig.client != request.user:
+        if user.role == "freelancer" and user.id == int(freelancer_id):
+            deleted, _ = gig.applications.filter(applicant_id=freelancer_id).delete()
+            if deleted == 0:
+                return Response(
+                    {"detail": "Paraiška nerasta."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             return Response(
-                {"detail": "Tik klientas gali atmesti paraiškas."},
-                status=status.HTTP_403_FORBIDDEN,
+                {"detail": "Paraiška atšaukta."},
+                status=status.HTTP_204_NO_CONTENT,
             )
 
-        deleted, _ = gig.applications.filter(freelancer_id=freelancer_id).delete()
+        if gig.client == user:
+            deleted, _ = gig.applications.filter(applicant_id=freelancer_id).delete()
+            if deleted == 0:
+                return Response(
+                    {"detail": "Paraiška nerasta."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            return Response(
+                {"detail": "Paraiška atmesta."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
+        deleted, _ = gig.applications.filter(applicant_id=freelancer_id).delete()
         if deleted == 0:
             return Response(
                 {"detail": "Paraiška nerasta."},

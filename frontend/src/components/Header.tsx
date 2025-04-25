@@ -61,7 +61,7 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
             <div className="flex gap-2">
               <Button
                 size="sm"
-                color="gray"
+                color="yellow"
                 onClick={() => navigate("/dashboard")}
                 className="text-sm min-w-[120px]"
               >
@@ -108,7 +108,6 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
                     <FaLevelUpAlt className="text-green-500" /> {user.gamification_profile.level} Lygis
                   </span>
                 </p>
-
               )}
             </div>
 
@@ -119,9 +118,7 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
               className="cursor-pointer w-10 h-10"
               onClick={() => navigate(`/profile/${user.username}`)}
             />
-
             <LogoutButton />
-
           </>
         )}
 

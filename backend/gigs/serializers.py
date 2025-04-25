@@ -15,6 +15,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class ApplicationSerializer(serializers.ModelSerializer):
     applicant_name = serializers.SerializerMethodField()
+    applicant_username = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
@@ -24,6 +25,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "gig",
             "applicant",
             "applicant_name",
+            "applicant_username",
             "status",
             "status_display",
             "applied_at",
@@ -39,6 +41,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
     def get_applicant_name(self, obj):
         return f"{obj.applicant.first_name} {obj.applicant.last_name}"
 
+    def get_applicant_username(self, obj):
+        return obj.applicant.username
+
     def create(self, validated_data):
         validated_data["applicant"] = self.context["request"].user
         return super().create(validated_data)
@@ -50,6 +55,7 @@ class GigSerializer(serializers.ModelSerializer):
     freelancer_name = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     applications = ApplicationSerializer(many=True, read_only=True)
+    already_applied = serializers.SerializerMethodField()
 
     class Meta:
         model = Gig
@@ -66,6 +72,7 @@ class GigSerializer(serializers.ModelSerializer):
             "freelancer_name",
             "review",
             "applications",
+            "already_applied",
             "created_at",
             "updated_at",
         ]
@@ -80,6 +87,12 @@ class GigSerializer(serializers.ModelSerializer):
             if obj.freelancer
             else None
         )
+
+    def get_already_applied(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.applications.filter(applicant=request.user).exists()
 
     def create(self, validated_data):
         validated_data["client"] = self.context["request"].user

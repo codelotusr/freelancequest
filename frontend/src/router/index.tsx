@@ -10,6 +10,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import PublicRoute from "./PublicRoute";
 import OnboardingLayout from "../layouts/OnboardingLayout";
 import DashboardPage from "../pages/DashboardPage";
+import GigsPage from "../pages/GigsPage";
 
 export default function AppRoutes() {
   return (
@@ -28,6 +29,7 @@ export default function AppRoutes() {
         <Route element={<MainLayout />}>
           <Route path="/temp" element={<TempPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/gigs" element={<GigsPage />} />
         </Route>
       </Route>
     </Routes >
