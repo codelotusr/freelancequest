@@ -68,7 +68,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
         <div>
           <Label>Pavadinimas</Label>
-          {isFreelancer || !isClientOwner ? (
+          {isFreelancer ? (
             <p className="text-gray-200">{title}</p>
           ) : (
             <TextInput
@@ -83,7 +83,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
         <div>
           <Label>Aprašymas</Label>
-          {isFreelancer || !isClientOwner ? (
+          {isFreelancer ? (
             <p className="text-gray-200">{description}</p>
           ) : (
             <Textarea
@@ -99,7 +99,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
         <div>
           <Label>Pradinė kaina (€)</Label>
-          {isFreelancer || !isClientOwner ? (
+          {isFreelancer ? (
             <p className="text-gray-200">{price}€</p>
           ) : (
             <TextInput
@@ -129,9 +129,9 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
         <div className="flex justify-end gap-2 pt-4">
           <Button color="gray" onClick={onClose}>
-            {isFreelancer || !isClientOwner ? "Uždaryti" : "Atšaukti"}
+            {isFreelancer ? "Uždaryti" : "Atšaukti"}
           </Button>
-          {isClientOwner && (
+          {(
             <Button
               disabled={isSubmitting || !title || !description || !price}
               onClick={handleSubmit}

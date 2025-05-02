@@ -1,11 +1,20 @@
+from typing import cast
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .filters import GigFilter
 from .models import Application, Gig
-from .serializers import GigSerializer, ReviewSerializer
+from .serializers import (
+    ApplicationSerializer,
+    GigSerializer,
+    GigSubmissionSerializer,
+    ReviewSerializer,
+)
 
 
 class IsClientOrReadOnly(permissions.BasePermission):
@@ -31,7 +40,7 @@ class GigViewSet(viewsets.ModelViewSet):
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def assign(self, request, pk=None):
-        gig = self.get_object()
+        gig = cast(Gig, self.get_object())
 
         if gig.status != "available":
             return Response({"detail": "Pasiūlymas nėra atviras."}, status=400)
@@ -205,3 +214,71 @@ class GigViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "Paraiška atmesta."}, status=status.HTTP_204_NO_CONTENT
         )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def my(self, request):
+        gigs = Gig.objects.filter(freelancer=request.user)
+        serializer = self.get_serializer(gigs, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
+    def submit_work(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.freelancer != request.user:
+            return Response(
+                {"detail": "Tik paskirtas specialistas gali pateikti darbą."},
+                status=403,
+            )
+
+        if hasattr(gig, "submission"):
+            return Response({"detail": "Darbas jau pateiktas."}, status=400)
+
+        serializer = GigSubmissionSerializer(data=request.data, context={"gig": gig})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        gig.status = "pending"
+        gig.save()
+
+        return Response(serializer.data, status=201)
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
+    def approve_submission(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user:
+            return Response(
+                {"detail": "Tik klientas gali patvirtinti darbą."}, status=403
+            )
+
+        if not hasattr(gig, "submission"):
+            return Response({"detail": "Darbas dar nepateiktas."}, status=400)
+
+        if gig.status != "pending":
+            return Response({"detail": "Darbas jau patvirtintas."}, status=400)
+
+        gig.status = "completed"
+        gig.save()
+
+        return Response({"detail": "Darbas patvirtintas."}, status=200)
+
+
+class MyApplicationsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = Application.objects.filter(
+            applicant=request.user
+        ).select_related("gig")
+        serializer = ApplicationSerializer(
+            applications, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

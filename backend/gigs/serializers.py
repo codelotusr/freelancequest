@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from gigs.models import Application, Gig, Review
+from gigs.models import Application, Gig, GigSubmission, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -17,12 +17,14 @@ class ApplicationSerializer(serializers.ModelSerializer):
     applicant_name = serializers.SerializerMethodField()
     applicant_username = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    gig_title = serializers.CharField(source="gig.title", read_only=True)
 
     class Meta:
         model = Application
         fields = [
             "id",
             "gig",
+            "gig_title",
             "applicant",
             "applicant_name",
             "applicant_username",
@@ -96,4 +98,15 @@ class GigSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["client"] = self.context["request"].user
+        return super().create(validated_data)
+
+
+class GigSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GigSubmission
+        fields = ["id", "gig", "file", "message", "submitted_at"]
+        read_only_fields = ["id", "submitted_at", "gig"]
+
+    def create(self, validated_data):
+        validated_data["gig"] = self.context["gig"]
         return super().create(validated_data)

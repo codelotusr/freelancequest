@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("Token refresh failed", refreshErr);
           await logout();
           setUser(null);
+          window.location.href = "/login";
         }
       } else {
         setUser(null);
@@ -39,7 +40,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logoutUser = async () => {
     try {
       await logout();
-      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("refresh");
+      localStorage.removeItem("access");
       setUser(null);
     } catch (error) {
       console.error("Logout failed:", error);

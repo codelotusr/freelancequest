@@ -185,6 +185,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "TOKEN_REFRESH_SERIALIZER": "users.serializers.SafeTokenRefreshSerializer",
 }
 REST_USE_JWT = True
 

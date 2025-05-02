@@ -17,6 +17,8 @@ import DeleteGigModal from "../components/DeleteGigModal"
 import ApplicantsModal from "../components/ApplicantsModal";
 import api from "../services/axios";
 
+type ModalType = "usersGigs" | "usersApplications" | "usersMissions" | "usersReviews";
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
 
@@ -36,6 +38,8 @@ export default function DashboardPage() {
   const [isApplicantsModalOpen, setIsApplicantsModalOpen] = useState(false);
   const [selectedApplicantsGig, setSelectedApplicantsGig] = useState<any | null>(null);
   const [activeModal, setActiveModal] = useState<"usersGigs" | "usersApplications" | "usersMissions" | "usersReviews" | null>(null);
+  const [freelancerApplications, setFreelancerApplications] = useState<any[]>([]);
+  const [freelancerGigs, setFreelancerGigs] = useState<any[]>([]);
 
   const handleGigSubmit = async (gigData: {
     title: string;

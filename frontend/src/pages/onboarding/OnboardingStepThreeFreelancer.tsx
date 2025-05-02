@@ -1,8 +1,15 @@
-import { Label, TextInput, Textarea, Button } from "flowbite-react";
+import { Label, Textarea, TextInput, Button } from "flowbite-react";
 import { OnboardingFormData } from "../../components/OnboardingFormData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getAllSkills } from "../../services/skillsApi";
 import { FaTools, FaLink, FaUserEdit } from "react-icons/fa";
 import { HiPlus, HiTrash } from "react-icons/hi";
+import Select from "react-select";
+
+interface Skill {
+  id: number;
+  name: string;
+}
 
 interface Props {
   formData: OnboardingFormData;
@@ -17,22 +24,24 @@ export default function OnboardingStepThreeFreelancer({
   onNext,
   onBack,
 }: Props) {
-  const [skillInput, setSkillInput] = useState("");
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [portfolioInput, setPortfolioInput] = useState("");
 
-  const addSkill = () => {
-    const trimmed = skillInput.trim();
-    if (trimmed && !formData.skills?.includes(trimmed)) {
-      onChange({
-        skills: [...(formData.skills || []), trimmed],
-      });
-      setSkillInput("");
+  useEffect(() => {
+    getAllSkills()
+      .then((res) => setAvailableSkills(res.data))
+      .catch((err) => console.error("Failed to load skills", err));
+  }, []);
+
+  const addSkill = (skillId: number) => {
+    if (!formData.skills?.includes(skillId)) {
+      onChange({ skills: [...(formData.skills || []), skillId] });
     }
   };
 
-  const removeSkill = (skill: string) => {
+  const removeSkill = (id: number) => {
     onChange({
-      skills: formData.skills?.filter((s) => s !== skill),
+      skills: formData.skills?.filter((s) => s !== id),
     });
   };
 
@@ -55,6 +64,19 @@ export default function OnboardingStepThreeFreelancer({
   const isValid =
     (formData.skills?.length ?? 0) > 0 && (formData.bio?.trim().length ?? 0) > 0;
 
+  const selectedSkills = availableSkills.filter((s) =>
+    formData.skills?.includes(s.id)
+  );
+
+  const skillOptions = availableSkills
+    .filter((s) => !formData.skills?.includes(s.id))
+    .map((skill) => ({
+      value: skill.id,
+      label: skill.name,
+    }));
+
+  const isDark = document.documentElement.classList.contains("dark");
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -72,30 +94,73 @@ export default function OnboardingStepThreeFreelancer({
 
       <div>
         <Label htmlFor="skills" className="mb-1 flex items-center gap-2">
-          <FaTools className="text-green-500" /> Įgūdžiai
+          <FaTools className="text-green-500" /> Pasirink įgūdžius
         </Label>
-        <div className="flex gap-2 mb-2 w-full">
-          <TextInput
-            id="skills"
-            placeholder="pvz. Grafinis dizainas"
-            value={skillInput}
-            onChange={(e) => setSkillInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
-            className="flex-1"
+        <div className="mb-2">
+          <Select
+            options={skillOptions}
+            placeholder="Ieškoti įgūdžio..."
+            value={null}
+            isSearchable
+            onChange={(selected) => {
+              if (selected) addSkill(selected.value);
+            }}
+            styles={{
+              control: (base) => ({
+                ...base,
+                backgroundColor: isDark ? "#374151" : "#f9fafb",
+                color: isDark ? "white" : "black",
+                boxShadow: "none",
+                fontSize: "0.875rem",
+              }),
+              menu: (base) => ({
+                ...base,
+                backgroundColor: isDark ? "#1f2937" : "white",
+                color: isDark ? "white" : "black",
+                zIndex: 100,
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: isDark ? "white" : "black",
+              }),
+              input: (base) => ({
+                ...base,
+                color: isDark ? "white" : "black",
+              }),
+              option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isFocused
+                  ? isDark
+                    ? "#374151"
+                    : "#eff6ff"
+                  : isDark
+                    ? "#1f2937"
+                    : "white",
+                color: isDark ? "white" : "black",
+                cursor: "pointer",
+              }),
+            }}
+            theme={(theme) => ({
+              ...theme,
+              borderRadius: 6,
+              colors: {
+                ...theme.colors,
+                primary25: isDark ? "#374151" : "#eff6ff",
+                primary: "#3b82f6",
+              },
+            })}
           />
-          <Button onClick={addSkill} color="blue" className="shrink-0 h-10 px-4">
-            <HiPlus className="mr-1" /> Pridėti
-          </Button>
         </div>
+
         <div className="flex flex-wrap gap-2">
-          {formData.skills?.map((skill) => (
+          {selectedSkills.map((skill) => (
             <div
-              key={skill}
+              key={skill.id}
               className="flex items-center gap-1 bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 px-3 py-1 rounded-full"
             >
-              {skill}
+              {skill.name}
               <button
-                onClick={() => removeSkill(skill)}
+                onClick={() => removeSkill(skill.id)}
                 className="text-red-400 hover:text-red-600"
               >
                 <HiTrash />
@@ -146,7 +211,6 @@ export default function OnboardingStepThreeFreelancer({
             Atgal
           </Button>
         </div>
-
         <div className="flex-1">
           <Button onClick={onNext} disabled={!isValid} className="w-full">
             Toliau

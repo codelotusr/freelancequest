@@ -64,7 +64,10 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(FreelancerProfile)
 class FreelancerAdmin(admin.ModelAdmin):
-    list_display = ("user", "bio", "skills")
+    list_display = ("user", "bio", "get_skills")
+
+    def get_skills(self, obj):
+        return ", ".join(skill.name for skill in obj.skills.all())
 
 
 @admin.register(ClientProfile)

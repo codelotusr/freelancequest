@@ -67,3 +67,13 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.applicant} -> {self.gig.title} ({self.status})"
+
+
+class GigSubmission(models.Model):
+    gig = models.OneToOneField(Gig, on_delete=models.CASCADE, related_name="submission")
+    file = models.FileField(upload_to="submissions/")
+    message = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Submission for {self.gig.title}"

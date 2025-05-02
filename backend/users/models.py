@@ -24,6 +24,13 @@ class Address(models.Model):
         return f"{self.street}, {self.city} {self.postal_code}"
 
 
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -90,7 +97,7 @@ class FreelancerProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="freelancer_profile"
     )
     bio = models.TextField(blank=True)
-    skills = models.JSONField(default=list)
+    skills = models.ManyToManyField("users.Skill", blank=True)
     portfolio_links = models.JSONField(default=list, blank=True)
 
 

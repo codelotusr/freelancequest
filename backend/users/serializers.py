@@ -6,17 +6,28 @@ from dj_rest_auth.registration.serializers import (
     RegisterSerializer as DjRegisterSerializer,
 )
 from dj_rest_auth.serializers import UserDetailsSerializer
+from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from gamification.serializers import GamificationProfileSerializer
-from users.models import Address, ClientProfile, FreelancerProfile, User
+from users.models import Address, ClientProfile, FreelancerProfile, Skill
+
+User = get_user_model()
 
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ["street", "city", "postal_code", "country"]
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ["id", "name"]
 
 
 class CustomRegisterSerializer(DjRegisterSerializer):
@@ -52,9 +63,14 @@ class CustomRegisterSerializer(DjRegisterSerializer):
 
 
 class FreelancerProfileSerializer(serializers.ModelSerializer):
+    skills = SkillSerializer(many=True, read_only=True)
+    skill_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Skill.objects.all(), source="skills"
+    )
+
     class Meta:
         model = FreelancerProfile
-        fields = ["bio", "skills", "portfolio_links"]
+        fields = ["bio", "skills", "skill_ids", "portfolio_links"]
 
 
 class ClientProfileSerializer(serializers.ModelSerializer):
@@ -135,7 +151,8 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             ):
                 profile, _ = FreelancerProfile.objects.get_or_create(user=instance)
                 profile.bio = freelancer_data["bio"] or profile.bio
-                profile.skills = freelancer_data["skills"] or profile.skills
+                if freelancer_data["skills"] is not None:
+                    profile.skills.set(freelancer_data["skills"])
                 profile.portfolio_links = (
                     freelancer_data["portfolio_links"] or profile.portfolio_links
                 )
@@ -163,3 +180,17 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
         instance.save()
         return instance
+
+
+class SafeTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        user_id = self.token.payload.get("user_id")
+        if user_id:
+            try:
+                User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                raise InvalidToken("User no longer exists (token is stale).")
+
+        return data

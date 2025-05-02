@@ -42,10 +42,14 @@ export default function LoginPage() {
       toast.success("Prisijungta sėkmingai!");
     } catch (err: unknown) {
       const apiErrors = (err as APIError).response?.data;
+      let generalError = apiErrors?.non_field_errors?.[0];
+      if (generalError === "Unable to log in with provided credentials.") {
+        generalError = "Neteisingas el. paštas arba slaptažodis";
+      }
       setErrors({
         email: apiErrors?.email?.[0],
         password: apiErrors?.password?.[0],
-        general: apiErrors?.non_field_errors?.[0] || "Neteisingi prisijungimo duomenys",
+        general: generalError || "Neteisingi prisijungimo duomenys",
       });
       toast.error("Prisijungimas nepavyko");
     } finally {
