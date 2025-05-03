@@ -5,6 +5,9 @@ import { FaMoneyBillWave, FaClipboardCheck, FaUserTie } from "react-icons/fa";
 import { useAuth } from "../context/useAuth";
 import GigModal from "../components/GigModal";
 import toast from "react-hot-toast";
+import Select from "react-select";
+import { getAllSkills } from "../services/skillsApi";
+import { useDarkMode } from "../context/DarkModeProvider";
 
 export default function GigsPage() {
   const { user } = useAuth();
@@ -13,7 +16,10 @@ export default function GigsPage() {
   const [isGigModalOpen, setIsGigModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  const [skills, setSkills] = useState<{ label: string; value: number }[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
+  const { isDarkMode } = useDarkMode();
+  const isDark = isDarkMode;
 
 
   const fetchGigs = async () => {
@@ -23,7 +29,18 @@ export default function GigsPage() {
           status: "available",
           search,
           min_price: minPrice,
-          max_price: maxPrice,
+          skill_ids: selectedSkills,
+        },
+        paramsSerializer: (params) => {
+          const query = new URLSearchParams();
+          Object.entries(params).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              value.forEach((v) => query.append(key, v.toString()));
+            } else if (value) {
+              query.append(key, value.toString());
+            }
+          });
+          return query.toString();
         },
       });
       setGigs(res.data);
@@ -34,6 +51,13 @@ export default function GigsPage() {
 
   useEffect(() => {
     fetchGigs();
+    getAllSkills().then((res) => {
+      const options = res.data.map((s: any) => ({
+        label: s.name,
+        value: s.id,
+      }));
+      setSkills(options);
+    });
   }, []);
 
   const handleApply = async (gigId: number) => {
@@ -71,23 +95,79 @@ export default function GigsPage() {
           />
         </div>
         <div>
-          <Label htmlFor="minPrice">Kaina nuo (€)</Label>
+          <Label htmlFor="minPrice">Atlygis nuo (€)</Label>
           <TextInput
             id="minPrice"
             type="number"
             min="0"
             value={minPrice}
+            placeholder="0"
             onChange={(e) => setMinPrice(e.target.value)}
           />
         </div>
         <div>
-          <Label htmlFor="maxPrice">Kaina iki (€)</Label>
-          <TextInput
-            id="maxPrice"
-            type="number"
-            min="0"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
+          <Label>Įgūdžiai</Label>
+          <Select
+            options={skills}
+            isMulti
+            placeholder="Pasirinkite įgūdžius..."
+            onChange={(selected) => {
+              setSelectedSkills(selected.map((s) => s.value));
+            }}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            styles={{
+              control: (base) => ({
+                ...base,
+                backgroundColor: isDark ? "#374151" : "#f9fafb",
+                color: isDark ? "white" : "black",
+                boxShadow: "none",
+                fontSize: "0.875rem",
+              }),
+              menu: (base) => ({
+                ...base,
+                backgroundColor: isDark ? "#1f2937" : "white",
+                color: isDark ? "white" : "black",
+                zIndex: 100,
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: isDark ? "white" : "black",
+              }),
+              multiValue: (base) => ({
+                ...base,
+                backgroundColor: "#fdba74",
+              }),
+              multiValueLabel: (base) => ({
+                ...base,
+                color: "#7c2d12",
+              }),
+              input: (base) => ({
+                ...base,
+                color: isDark ? "white" : "black",
+              }),
+              option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isFocused
+                  ? isDark
+                    ? "#374151"
+                    : "#eff6ff"
+                  : isDark
+                    ? "#1f2937"
+                    : "white",
+                color: isDark ? "white" : "black",
+                cursor: "pointer",
+              }),
+            }}
+            theme={(theme) => ({
+              ...theme,
+              borderRadius: 6,
+              colors: {
+                ...theme.colors,
+                primary25: isDark ? "#374151" : "#eff6ff",
+                primary: "#3b82f6",
+              },
+            })}
           />
         </div>
         <Button onClick={fetchGigs} className="col-span-full w-full sm:w-auto mt-2">

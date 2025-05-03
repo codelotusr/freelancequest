@@ -5,6 +5,7 @@ import { getAllSkills } from "../../services/skillsApi";
 import { FaTools, FaLink, FaUserEdit } from "react-icons/fa";
 import { HiPlus, HiTrash } from "react-icons/hi";
 import Select from "react-select";
+import { useDarkMode } from "../../context/DarkModeProvider";
 
 interface Skill {
   id: number;
@@ -75,7 +76,8 @@ export default function OnboardingStepThreeFreelancer({
       label: skill.name,
     }));
 
-  const isDark = document.documentElement.classList.contains("dark");
+  const { isDarkMode } = useDarkMode();
+  const isDark = isDarkMode;
 
   return (
     <div className="flex flex-col gap-6">

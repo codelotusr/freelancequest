@@ -11,11 +11,14 @@ import {
   FaUserTie,
   FaEdit,
   FaTrashAlt,
+  FaComments,
+  FaFileAlt,
 } from "react-icons/fa";
 import GigModal from "../components/GigModal";
 import DeleteGigModal from "../components/DeleteGigModal"
 import ApplicantsModal from "../components/ApplicantsModal";
 import api from "../services/axios";
+import { Link } from "react-router-dom";
 
 type ModalType = "usersGigs" | "usersApplications" | "usersMissions" | "usersReviews";
 
@@ -203,13 +206,22 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <FaUserTie className="text-purple-400" />
-                          <span>{gig.freelancer_name || "—"}</span>
+                          {gig.freelancer_username ? (
+                            <Link
+                              to={`/profile/${gig.freelancer_username}`}
+                              className="text-blue-400 hover:underline"
+                            >
+                              {gig.freelancer_name}
+                            </Link>
+                          ) : (
+                            <span>—</span>
+                          )}
                         </div>
                       </div>
 
                       <div className="flex justify-end mt-6">
                         <div className="flex gap-2 w-full sm:w-auto">
-                          {gig.applications?.length > 0 && (
+                          {gig.status === "available" && gig.applications?.length > 0 && (
                             <Button
                               color="purple"
                               size="xs"
@@ -224,28 +236,75 @@ export default function DashboardPage() {
                             </Button>
                           )}
 
-                          <Button
-                            color="yellow"
-                            size="xs"
-                            onClick={() => {
-                              setSelectedGig(gig);
-                              setIsGigModalOpen(true);
-                            }}
-                            className="flex items-center gap-1 px-3 py-1.5"
-                          >
-                            <FaEdit className="text-sm" />
-                            Redaguoti
-                          </Button>
+                          {gig.status === "in_progress" && (
+                            <Button
+                              color="green"
+                              size="xs"
+                              onClick={() => {
+                                // open modal or page to view the submission
+                              }}
+                              className="flex items-center gap-1 px-3 py-1.5"
+                            >
+                              <FaFileAlt className="text-sm" />
+                              Pateiktas darbas
+                            </Button>
+                          )}
 
-                          <Button
-                            color="red"
-                            size="xs"
-                            onClick={() => setGigToDelete(gig)}
-                            className="flex items-center gap-1 px-3 py-1.5"
-                          >
-                            <FaTrashAlt className="text-sm" />
-                            Ištrinti
-                          </Button>
+
+                          {gig.status === "in_progress" && (
+                            <>
+                              <Button
+                                color="yellow"
+                                size="xs"
+                                onClick={() => {
+                                  // open comments modal
+                                }}
+                                className="flex items-center gap-1 px-3 py-1.5"
+                              >
+                                <FaCommentDots className="text-sm" />
+                                Komentarai
+                              </Button>
+                              <Button
+                                color="blue"
+                                size="xs"
+                                onClick={() => {
+                                  // open chat modal
+                                }}
+                                className="flex items-center gap-1 px-3 py-1.5"
+                              >
+                                <FaComments className="text-sm" />
+                                Pokalbis
+                              </Button>
+                            </>
+                          )}
+
+                          {gig.status === "available" && (
+                            <>
+
+                              <Button
+                                color="yellow"
+                                size="xs"
+                                onClick={() => {
+                                  setSelectedGig(gig);
+                                  setIsGigModalOpen(true);
+                                }}
+                                className="flex items-center gap-1 px-3 py-1.5"
+                              >
+                                <FaEdit className="text-sm" />
+                                Redaguoti
+                              </Button>
+
+                              <Button
+                                color="red"
+                                size="xs"
+                                onClick={() => setGigToDelete(gig)}
+                                className="flex items-center gap-1 px-3 py-1.5"
+                              >
+                                <FaTrashAlt className="text-sm" />
+                                Ištrinti
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

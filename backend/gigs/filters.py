@@ -10,10 +10,11 @@ class GigFilter(filters.FilterSet):
     max_price = filters.NumberFilter(
         field_name="price", lookup_expr="lte", method="filter_max_price"
     )
+    skill_ids = filters.BaseInFilter(field_name="skills__id", lookup_expr="in")
 
     class Meta:
         model = Gig
-        fields = ["status", "client", "freelancer"]
+        fields = ["status", "client", "freelancer", "skill_ids"]
 
     def filter_min_price(self, queryset, name, value):
         if value not in [None, ""]:

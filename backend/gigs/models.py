@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from users.models import Skill
+
 
 class Gig(models.Model):
     STATUS_CHOICES = [
@@ -27,6 +29,7 @@ class Gig(models.Model):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="available"
     )
+    skills = models.ManyToManyField(Skill, blank=True, related_name="gigs")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

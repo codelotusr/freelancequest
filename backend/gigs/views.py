@@ -33,8 +33,24 @@ class GigViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = GigFilter
 
+    def _set_gig_skills(self, gig, data):
+        skill_ids = data.get("skill_ids", [])
+        if isinstance(skill_ids, str):
+            try:
+                skill_ids = json.loads(skill_ids)
+            except json.JSONDecodeError:
+                skill_ids = []
+
+        if isinstance(skill_ids, list):
+            gig.skills.set(skill_ids)
+
     def perform_create(self, serializer):
-        serializer.save(client=self.request.user)
+        gig = serializer.save(client=self.request.user)
+        self._set_gig_skills(gig, self.request.data)
+
+    def perform_update(self, serializer):
+        gig = serializer.save()
+        self._set_gig_skills(gig, self.request.data)
 
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
