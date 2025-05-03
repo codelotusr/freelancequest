@@ -7,8 +7,8 @@ from users.models import Skill
 class Gig(models.Model):
     STATUS_CHOICES = [
         ("available", "Laisvas"),
-        ("pending", "Laukiama patvirtinimo"),
         ("in_progress", "Vykdomas"),
+        ("pending", "Laukiama patvirtinimo"),
         ("completed", "Įvykdytas"),
         ("cancelled", "Atšauktas"),
     ]

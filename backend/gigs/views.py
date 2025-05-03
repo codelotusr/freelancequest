@@ -1,3 +1,4 @@
+import json
 from typing import cast
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import GigFilter
-from .models import Application, Gig
+from .models import Application, Gig, Review
 from .serializers import (
     ApplicationSerializer,
     GigSerializer,
@@ -180,11 +181,15 @@ class GigViewSet(viewsets.ModelViewSet):
         gig.freelancer = application.applicant
         gig.status = "in_progress"
         gig.save()
+
+        application.status = "accepted"
+        application.save()
+
         Application.objects.filter(gig=gig).exclude(
             applicant=application.applicant
-        ).delete()
+        ).update(status="rejected")
 
-        return Response(GigSerializer(gig, context=self.get_serializer_context()).data)
+        return Response(self.get_serializer(gig).data)
 
     @action(
         detail=True,
@@ -253,16 +258,30 @@ class GigViewSet(viewsets.ModelViewSet):
                 status=403,
             )
 
+        submission_data = {
+            "file": request.FILES.get("file"),
+            "message": request.data.get("message", ""),
+        }
+
         if hasattr(gig, "submission"):
-            return Response({"detail": "Darbas jau pateiktas."}, status=400)
+            submission = gig.submission
+            if submission_data["file"]:
+                submission.file = submission_data["file"]
+            submission.message = submission_data["message"]
+            submission.save()
+        else:
+            serializer = GigSubmissionSerializer(
+                data=submission_data, context={"gig": gig}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            gig.status = "pending"
+            gig.save()
 
-        serializer = GigSubmissionSerializer(data=request.data, context={"gig": gig})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        gig.status = "pending"
-        gig.save()
-
-        return Response(serializer.data, status=201)
+        return Response(
+            {"detail": "Darbas pateiktas arba atnaujintas."},
+            status=200,
+        )
 
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
@@ -284,7 +303,49 @@ class GigViewSet(viewsets.ModelViewSet):
         gig.status = "completed"
         gig.save()
 
-        return Response({"detail": "Darbas patvirtintas."}, status=200)
+        # Optional review creation
+        rating = request.data.get("rating")
+        feedback = request.data.get("feedback")
+
+        if rating and feedback:
+            if hasattr(gig, "review"):
+                return Response({"detail": "Atsiliepimas jau egzistuoja."}, status=400)
+
+            Review.objects.create(gig=gig, rating=int(rating), feedback=feedback)
+
+        return Response(
+            {"detail": "Darbas patvirtintas ir atsiliepimas pateiktas."}, status=200
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
+    def decline_submission(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user:
+            return Response({"detail": "Tik klientas gali atmesti darbą."}, status=403)
+
+        if not hasattr(gig, "submission"):
+            return Response({"detail": "Darbas dar nepateiktas."}, status=400)
+
+        if gig.status != "pending":
+            return Response(
+                {"detail": "Tik laukiami darbai gali būti atmesti."}, status=400
+            )
+
+        gig.status = "in_progress"
+        gig.save()
+
+        return Response(
+            {"detail": "Darbas atmestas. Specialistas gali pateikti iš naujo."},
+            status=200,
+        )
 
 
 class MyApplicationsView(APIView):

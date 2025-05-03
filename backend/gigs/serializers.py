@@ -15,6 +15,26 @@ class ReviewSerializer(serializers.ModelSerializer):
         }
 
 
+class GigSubmissionSerializer(serializers.ModelSerializer):
+
+    file = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GigSubmission
+        fields = ["id", "gig", "file", "message", "submitted_at"]
+        read_only_fields = ["id", "submitted_at", "gig"]
+
+    def create(self, validated_data):
+        validated_data["gig"] = self.context["gig"]
+        return super().create(validated_data)
+
+    def get_file(self, obj):
+        request = self.context.get("request")
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
+
+
 class ApplicationSerializer(serializers.ModelSerializer):
     applicant_name = serializers.SerializerMethodField()
     applicant_username = serializers.SerializerMethodField()
@@ -56,6 +76,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 class GigSerializer(serializers.ModelSerializer):
     review = ReviewSerializer(required=False, allow_null=True)
     client_name = serializers.SerializerMethodField()
+    client_username = serializers.SerializerMethodField()
     freelancer_name = serializers.SerializerMethodField()
     freelancer_username = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
@@ -65,6 +86,7 @@ class GigSerializer(serializers.ModelSerializer):
     skill_ids = serializers.PrimaryKeyRelatedField(
         many=True, write_only=True, queryset=Skill.objects.all(), source="skills"
     )
+    submission = GigSubmissionSerializer(required=False, allow_null=True)
 
     class Meta:
         model = Gig
@@ -77,6 +99,7 @@ class GigSerializer(serializers.ModelSerializer):
             "status_display",
             "client",
             "client_name",
+            "client_username",
             "freelancer",
             "freelancer_name",
             "freelancer_username",
@@ -85,6 +108,7 @@ class GigSerializer(serializers.ModelSerializer):
             "already_applied",
             "skills",
             "skill_ids",
+            "submission",
             "created_at",
             "updated_at",
         ]
@@ -92,6 +116,9 @@ class GigSerializer(serializers.ModelSerializer):
 
     def get_client_name(self, obj):
         return f"{obj.client.first_name} {obj.client.last_name}" if obj.client else None
+
+    def get_client_username(self, obj):
+        return obj.client.username if obj.client else None
 
     def get_freelancer_name(self, obj):
         return (
@@ -111,15 +138,4 @@ class GigSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["client"] = self.context["request"].user
-        return super().create(validated_data)
-
-
-class GigSubmissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GigSubmission
-        fields = ["id", "gig", "file", "message", "submitted_at"]
-        read_only_fields = ["id", "submitted_at", "gig"]
-
-    def create(self, validated_data):
-        validated_data["gig"] = self.context["gig"]
         return super().create(validated_data)

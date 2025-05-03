@@ -23,6 +23,7 @@ interface GigModalProps {
     description: string;
     price: number;
     client_name?: string;
+    client_username?: string;
     client_id?: number;
     client?: number;
     skills?: { id: number; name: string }[];
@@ -45,6 +46,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFreelancer = user?.role === "freelancer";
+  const isClient = user?.role === "client";
   const isClientOwner = user?.role === "client" && user?.pk === initialData?.client;
 
   const [availableSkills, setAvailableSkills] = useState<SkillOption[]>([]);
@@ -133,7 +135,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
         </div>
 
         <div>
-          <Label>Pradinė kaina (€)</Label>
+          <Label>Atlyginimas (€)</Label>
           {isFreelancer ? (
             <p className="text-gray-200">{price}€</p>
           ) : (
@@ -229,7 +231,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
           <div className="flex items-center gap-2">
             <span className="font-medium text-white">Klientas:</span>
             <button
-              onClick={() => navigate(`/profile/${initialData.client_id}`)}
+              onClick={() => navigate(`/profile/${initialData.client_username}`)}
               className="text-blue-400 hover:underline"
             >
               {initialData.client_name}
@@ -242,7 +244,8 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
           <Button color="gray" onClick={onClose}>
             {isFreelancer ? "Uždaryti" : "Atšaukti"}
           </Button>
-          {(
+
+          {isClient && (
             <Button
               disabled={isSubmitting || !title || !description || !price}
               onClick={handleSubmit}
@@ -251,6 +254,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
             </Button>
           )}
         </div>
+
       </div>
     </Modal>
   );

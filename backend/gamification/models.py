@@ -13,6 +13,7 @@ class GamificationProfile(models.Model):
     )
     xp = models.PositiveIntegerField(default=0)
     level = models.PositiveIntegerField(default=1)
+    points = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} – Lvl {self.level} ({self.xp} XP)"
@@ -24,6 +25,17 @@ class GamificationProfile(models.Model):
 
     def recalculate_level(self):
         self.level = max(1, math.floor((self.xp / 100) ** 0.5))
+
+    def add_points(self, amount: int):
+        self.points += amount
+        self.save()
+
+    def spend_points(self, amount: int) -> bool:
+        if self.points >= amount:
+            self.points -= amount
+            self.save()
+            return True
+        return False
 
 
 class Mission(models.Model):
@@ -45,10 +57,33 @@ class Mission(models.Model):
     description = models.TextField()
     xp_reward = models.PositiveIntegerField()
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=ONCE)
+    point_reward = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.title} ({self.xp_reward} XP)"
+
+
+class PlatformBenefit(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    cost = models.PositiveIntegerField()
+    effect_code = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} – {self.cost} points"
+
+
+class UserBenefit(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    benefit = models.ForeignKey(PlatformBenefit, on_delete=models.CASCADE)
+    acquired_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("user", "benefit")
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} – {self.benefit.name}"
 
 
 class UserMissionProgress(models.Model):
@@ -59,6 +94,16 @@ class UserMissionProgress(models.Model):
 
     class Meta:
         unique_together = ("user", "mission")
+
+    def complete(self):
+        if not self.completed:
+            self.completed = True
+            self.completed_at = timezone.now()
+            self.save()
+
+            profile = self.user.gamification_profile
+            profile.add_xp(self.mission.xp_reward)
+            profile.add_points(self.mission.point_reward)
 
     def __str__(self):
         return f"{self.user.first_name} – {self.mission.title} – {'true' if self.completed else 'false'}"
@@ -83,3 +128,16 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} – {self.badge.name}"
+
+
+class Tournament(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="tournaments"
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.start_date.date()} - {self.end_date.date()})"

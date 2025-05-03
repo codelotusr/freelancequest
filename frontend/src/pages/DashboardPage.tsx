@@ -19,8 +19,11 @@ import DeleteGigModal from "../components/DeleteGigModal"
 import ApplicantsModal from "../components/ApplicantsModal";
 import api from "../services/axios";
 import { Link } from "react-router-dom";
+import MyApplicationsModal from "../components/MyApplicationsModal";
+import MyInProgressGigsModal from "../components/MyInProgressGigsModal";
+import GigSubmissionModal from "../components/GigSubmissionModal";
+import SubmissionAndReviewModal from "../components/SubmissionAndReviewModal";
 
-type ModalType = "usersGigs" | "usersApplications" | "usersMissions" | "usersReviews";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -40,9 +43,11 @@ export default function DashboardPage() {
   const [gigToDelete, setGigToDelete] = useState<any | null>(null);
   const [isApplicantsModalOpen, setIsApplicantsModalOpen] = useState(false);
   const [selectedApplicantsGig, setSelectedApplicantsGig] = useState<any | null>(null);
-  const [activeModal, setActiveModal] = useState<"usersGigs" | "usersApplications" | "usersMissions" | "usersReviews" | null>(null);
-  const [freelancerApplications, setFreelancerApplications] = useState<any[]>([]);
-  const [freelancerGigs, setFreelancerGigs] = useState<any[]>([]);
+  const [isApplicationsModalOpen, setIsApplicationsModalOpen] = useState(false);
+  const [isInProgressModalOpen, setIsInProgressModalOpen] = useState(false);
+  const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
+  const [gigToSubmit, setGigToSubmit] = useState<any | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const handleGigSubmit = async (gigData: {
     title: string;
@@ -163,7 +168,24 @@ export default function DashboardPage() {
                   <p className="text-gray-300 mb-8 text-[15px]">{card.description}</p>
                   <Button
                     color={card.buttonColor as any}
-                    onClick={() => setActiveModal(card.modalType)}
+                    onClick={() => {
+                      switch (card.modalType) {
+                        case "usersApplications":
+                          setIsApplicationsModalOpen(true);
+                          break;
+                        case "usersGigs":
+                          setIsInProgressModalOpen(true);
+                          break;
+                        case "usersMissions":
+                          // setIsUsersMissionsModalOpen(true);
+                          break;
+                        case "usersReviews":
+                          // setIsUsersReviewsModalOpen(true); 
+                          break;
+                        default:
+                          break;
+                      }
+                    }}
                     className="w-full text-sm py-2"
                   >
                     {card.buttonText}
@@ -236,12 +258,13 @@ export default function DashboardPage() {
                             </Button>
                           )}
 
-                          {gig.status === "in_progress" && (
+                          {(gig.status === "in_progress" || gig.status === "pending" || gig.status == "completed") && (
                             <Button
                               color="green"
                               size="xs"
                               onClick={() => {
-                                // open modal or page to view the submission
+                                setSelectedGig(gig);
+                                setIsReviewModalOpen(true);
                               }}
                               className="flex items-center gap-1 px-3 py-1.5"
                             >
@@ -249,6 +272,7 @@ export default function DashboardPage() {
                               Pateiktas darbas
                             </Button>
                           )}
+
 
 
                           {gig.status === "in_progress" && (
@@ -324,33 +348,73 @@ export default function DashboardPage() {
               Sukurti pasiūlymą
             </Button>
 
-            <GigModal
-              isOpen={isGigModalOpen}
-              onClose={() => {
-                setIsGigModalOpen(false);
-                setSelectedGig(null);
-              }}
-              onSubmit={handleGigSubmit}
-              initialData={selectedGig}
-            />
-
-            <DeleteGigModal
-              isOpen={!!gigToDelete}
-              onClose={() => setGigToDelete(null)}
-              onConfirm={confirmGigDelete}
-              gigTitle={gigToDelete?.title}
-            />
-
-            <ApplicantsModal
-              gig={selectedApplicantsGig}
-              isOpen={isApplicantsModalOpen}
-              onClose={() => setIsApplicantsModalOpen(false)}
-              onConfirm={handleConfirmFreelancer}
-              onReject={handleRejectApplication}
-            />
-
           </>
         )}
+
+        <GigModal
+          isOpen={isGigModalOpen}
+          onClose={() => {
+            setIsGigModalOpen(false);
+            setSelectedGig(null);
+          }}
+          onSubmit={handleGigSubmit}
+          initialData={selectedGig}
+        />
+
+        <DeleteGigModal
+          isOpen={!!gigToDelete}
+          onClose={() => setGigToDelete(null)}
+          onConfirm={confirmGigDelete}
+          gigTitle={gigToDelete?.title}
+        />
+
+        <ApplicantsModal
+          gig={selectedApplicantsGig}
+          isOpen={isApplicantsModalOpen}
+          onClose={() => setIsApplicantsModalOpen(false)}
+          onConfirm={handleConfirmFreelancer}
+          onReject={handleRejectApplication}
+        />
+
+        <MyApplicationsModal
+          show={isApplicationsModalOpen}
+          onClose={() => setIsApplicationsModalOpen(false)}
+          onViewGig={(gigId) => {
+            const gig = gigs.find((g) => g.id === gigId);
+            if (gig) {
+              setSelectedGig(gig);
+              setIsGigModalOpen(true);
+            } else {
+              toast.error("Nepavyko rasti darbo pasiūlymo.");
+            }
+          }}
+        />
+
+        <GigSubmissionModal
+          gigId={gigToSubmit?.id || null}
+          isOpen={isSubmissionModalOpen}
+          onClose={() => {
+            setIsSubmissionModalOpen(false);
+            setGigToSubmit(null);
+          }}
+        />
+
+        <MyInProgressGigsModal
+          show={isInProgressModalOpen}
+          onClose={() => setIsInProgressModalOpen(false)}
+          onSubmitClick={(gig) => {
+            setGigToSubmit(gig);
+            setIsSubmissionModalOpen(true);
+          }}
+        />
+
+        <SubmissionAndReviewModal
+          show={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          gig={selectedGig}
+          onSuccess={() => fetchGigs()}
+        />
+
       </main>
     </div>
   );
