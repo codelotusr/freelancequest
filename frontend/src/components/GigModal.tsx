@@ -239,7 +239,6 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
           </div>
         )}
 
-
         <div className="flex justify-end gap-2 pt-4">
           <Button color="gray" onClick={onClose}>
             {isFreelancer ? "Uždaryti" : "Atšaukti"}

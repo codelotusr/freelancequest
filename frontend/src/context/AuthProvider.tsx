@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { AuthContext, User } from "./authContext";
 import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
+import { checkRecentMissions } from "../services/gamification";
+
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -9,7 +11,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUser = async () => {
     try {
       const res = await getCurrentUser();
-      setUser(res.data);
+      const freshUser = {
+        ...res.data,
+        gamification_profile: { ...res.data.gamification_profile },
+      };
+      setUser(freshUser);
+
+      await checkRecentMissions(async () => {
+        const updated = await getCurrentUser();
+        setUser({
+          ...updated.data,
+          gamification_profile: { ...updated.data.gamification_profile },
+        });
+      });
+
+
     } catch (err: any) {
       const status = err.response?.status;
 
@@ -17,7 +33,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           await refreshToken();
           const res = await getCurrentUser();
-          setUser(res.data);
+          const refreshedUser = {
+            ...res.data,
+            gamification_profile: { ...res.data.gamification_profile },
+          };
+          setUser(refreshedUser);
         } catch (refreshErr) {
           console.error("Token refresh failed", refreshErr);
           await logout();
@@ -70,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user ? { ...user } : null,
         isAuthenticated: !!user,
         loading,
         loginUser,

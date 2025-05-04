@@ -11,6 +11,7 @@ import PublicRoute from "./PublicRoute";
 import OnboardingLayout from "../layouts/OnboardingLayout";
 import DashboardPage from "../pages/DashboardPage";
 import GigsPage from "../pages/GigsPage";
+import ProfilePage from "../pages/ProfilePage";
 
 export default function AppRoutes() {
   return (
@@ -30,6 +31,7 @@ export default function AppRoutes() {
           <Route path="/temp" element={<TempPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/gigs" element={<GigsPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes >

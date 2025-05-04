@@ -4,6 +4,7 @@ import DarkModeToggle from "./DarkModeToggle";
 import LogoutButton from "../components/LogoutButton"
 import { FaFlask, FaLevelUpAlt } from "react-icons/fa";
 import { useAuth } from "../context/useAuth"
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeaderProps {
   variant?: "welcome" | "auth" | "onboarding" | "main";
@@ -91,6 +92,15 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
               >
                 Turnyrai
               </Button>
+              <Button
+                size="sm"
+                color="indigo"
+                onClick={() => navigate("/leaderboard")}
+                className="text-sm min-w-[120px]"
+              >
+                Lyderių lenta
+              </Button>
+
             </div>
 
 

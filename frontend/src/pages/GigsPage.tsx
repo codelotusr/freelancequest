@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import { getAllSkills } from "../services/skillsApi";
 import { useDarkMode } from "../context/DarkModeProvider";
+import { checkRecentMissions } from "../services/gamification";
 
 export default function GigsPage() {
   const { user } = useAuth();
@@ -64,6 +65,7 @@ export default function GigsPage() {
     try {
       await api.post(`/gigs/${gigId}/apply/`);
       toast.success("Paraiška pateikta!");
+      await checkRecentMissions();
       fetchGigs();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Nepavyko pateikti paraiškos.");

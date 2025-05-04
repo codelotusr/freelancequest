@@ -1,11 +1,12 @@
 from dj_rest_auth.views import LogoutView
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from users.models import Skill, User
-from users.serializers import SkillSerializer
+from users.serializers import CustomUserDetailsSerializer, SkillSerializer
 
 
 @api_view(["GET"])
@@ -44,4 +45,13 @@ class CustomLogoutView(LogoutView):
 class SkillViewSet(ReadOnlyModelViewSet):
     queryset = Skill.objects.all().order_by("name")
     serializer_class = SkillSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class PublicUserProfileView(RetrieveAPIView):
+    queryset = User.objects.select_related(
+        "gamification_profile", "freelancer_profile", "client_profile", "address"
+    )
+    serializer_class = CustomUserDetailsSerializer
+    lookup_field = "username"
     permission_classes = [permissions.AllowAny]

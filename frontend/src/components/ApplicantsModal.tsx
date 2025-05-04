@@ -1,5 +1,5 @@
 import { Modal, Button } from "flowbite-react";
-import { FaUser, FaCheck, FaEnvelope, FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
+import { FaUser, FaCheck, FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 type Application = {

@@ -20,11 +20,15 @@ class GamificationProfile(models.Model):
 
     def add_xp(self, amount: int):
         self.xp += amount
-        self.recalculate_level()
+
+        while self.xp >= self._xp_needed_for_next_level():
+            self.xp -= self._xp_needed_for_next_level()
+            self.level += 1
+
         self.save()
 
-    def recalculate_level(self):
-        self.level = max(1, math.floor((self.xp / 100) ** 0.5))
+    def _xp_needed_for_next_level(self) -> int:
+        return 100 * (2 ** (self.level - 1))
 
     def add_points(self, amount: int):
         self.points += amount
@@ -58,6 +62,7 @@ class Mission(models.Model):
     xp_reward = models.PositiveIntegerField()
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=ONCE)
     point_reward = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -91,6 +96,7 @@ class UserMissionProgress(models.Model):
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+    seen = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("user", "mission")
@@ -112,6 +118,7 @@ class UserMissionProgress(models.Model):
 class Badge(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    code = models.CharField(max_length=50, unique=True)
     icon = models.CharField(max_length=100)
 
     def __str__(self):

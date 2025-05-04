@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/auth/logout/", CustomLogoutView.as_view(), name="custom_logout"),
     path("auth/token/refresh/", get_refresh_view().as_view(), name="token_refresh"),
     path("api/", include("gigs.urls")),
+    path("api/gamification/", include("gamification.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",
