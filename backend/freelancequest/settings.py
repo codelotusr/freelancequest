@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "users",
     "gamification.apps.GamificationConfig",
     "gigs",
+    "chat",
 ]
 
 MIDDLEWARE = [

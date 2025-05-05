@@ -1,6 +1,6 @@
 import { useAuth } from "../context/useAuth";
 import { useState, useEffect } from "react";
-import { Card, Button } from "flowbite-react";
+import { Button } from "flowbite-react";
 import toast from "react-hot-toast";
 import {
   FaBriefcase,
@@ -23,6 +23,7 @@ import MyApplicationsModal from "../components/MyApplicationsModal";
 import MyInProgressGigsModal from "../components/MyInProgressGigsModal";
 import GigSubmissionModal from "../components/GigSubmissionModal";
 import SubmissionAndReviewModal from "../components/SubmissionAndReviewModal";
+import ChatModal from "../components/ChatModal";
 
 
 export default function DashboardPage() {
@@ -48,6 +49,10 @@ export default function DashboardPage() {
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [gigToSubmit, setGigToSubmit] = useState<any | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const clientGigs = gigs.filter((gig) => gig.client === user.pk);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
+
 
   const handleGigSubmit = async (gigData: {
     title: string;
@@ -205,7 +210,7 @@ export default function DashboardPage() {
 
               {gigs.length > 0 ? (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {gigs.map((gig) => (
+                  {clientGigs.map((gig) => (
                     <div
                       key={gig.id}
                       className="flex flex-col justify-between bg-gradient-to-br from-gray-800 via-gray-900 to-black border border-gray-700 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 hover:ring-2 hover:ring-violet-500"
@@ -292,13 +297,25 @@ export default function DashboardPage() {
                                 color="blue"
                                 size="xs"
                                 onClick={() => {
-                                  // open chat modal
+                                  const partner =
+                                    user.role === "client"
+                                      ? gig.freelancer_username
+                                      : gig.client_username;
+
+                                  if (partner) {
+                                    setChatPartnerUsername(partner);
+                                    setChatModalOpen(true);
+                                  } else {
+                                    toast.error("Pokalbio partneris nerastas.");
+                                  }
                                 }}
                                 className="flex items-center gap-1 px-3 py-1.5"
                               >
                                 <FaComments className="text-sm" />
                                 Pokalbis
                               </Button>
+
+
                             </>
                           )}
 
@@ -414,6 +431,18 @@ export default function DashboardPage() {
           gig={selectedGig}
           onSuccess={() => fetchGigs()}
         />
+
+        {chatPartnerUsername && (
+          <ChatModal
+            show={chatModalOpen}
+            onClose={() => {
+              setChatModalOpen(false);
+              setChatPartnerUsername(null);
+            }}
+            otherUsername={chatPartnerUsername}
+          />
+        )}
+
 
       </main>
     </div>

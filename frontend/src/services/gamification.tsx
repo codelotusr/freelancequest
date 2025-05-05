@@ -1,3 +1,4 @@
+import React from "react";
 import { toast } from "react-hot-toast";
 import api from "../services/axios";
 import MissionToast from "../components/MissionToast";
@@ -11,6 +12,11 @@ export async function checkRecentMissions(refetchUser?: () => Promise<void>) {
 
     for (const missionProgress of unseen) {
       const mission = missionProgress.mission;
+
+      await api.patch(`/gamification/progress/${missionProgress.id}/`, {
+        seen: true,
+      });
+
       toast.custom(
         <MissionToast
           title={mission.title}
@@ -22,14 +28,9 @@ export async function checkRecentMissions(refetchUser?: () => Promise<void>) {
           position: "top-center",
         }
       );
-
-      await api.patch(`/gamification/progress/${missionProgress.id}/`, {
-        seen: true,
-      });
-
     }
 
-    if (unseen.length && refetchUser) {
+    if (refetchUser) {
       await refetchUser();
     }
 

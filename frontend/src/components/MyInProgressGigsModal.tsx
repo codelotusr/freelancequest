@@ -2,6 +2,7 @@ import { Modal, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import api from "../services/axios";
 import { FaFileUpload, FaCommentDots, FaComments } from "react-icons/fa";
+import ChatModal from "../components/ChatModal";
 
 interface MyInProgressGigsModalProps {
   show: boolean;
@@ -26,6 +27,10 @@ export default function MyInProgressGigsModal({
       });
     }
   }, [show]);
+
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
+
 
   return (
     <Modal show={show} onClose={onClose}>
@@ -101,12 +106,29 @@ export default function MyInProgressGigsModal({
                   <Button
                     size="xs"
                     color="blue"
-                    disabled
-                    className="flex items-center gap-1 opacity-60"
+                    onClick={() => {
+                      const partner = gig.client_username;
+                      if (partner) {
+                        setChatPartnerUsername(partner);
+                        setChatModalOpen(true);
+                      }
+                    }}
+                    className="flex items-center gap-1"
                   >
                     <FaComments className="text-xs" /> Pokalbis
                   </Button>
+
                 </div>
+                {chatPartnerUsername && (
+                  <ChatModal
+                    show={chatModalOpen}
+                    onClose={() => {
+                      setChatModalOpen(false);
+                      setChatPartnerUsername(null);
+                    }}
+                    otherUsername={chatPartnerUsername}
+                  />
+                )}
               </li>
             ))}
           </ul>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AuthContext, User } from "./authContext";
 import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
 import { checkRecentMissions } from "../services/gamification";
@@ -7,6 +7,7 @@ import { checkRecentMissions } from "../services/gamification";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const hasCheckedMissions = useRef(false);
 
   const fetchUser = async () => {
     try {
@@ -17,15 +18,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       setUser(freshUser);
 
-      await checkRecentMissions(async () => {
-        const updated = await getCurrentUser();
-        setUser({
-          ...updated.data,
-          gamification_profile: { ...updated.data.gamification_profile },
+      if (!hasCheckedMissions.current) {
+        hasCheckedMissions.current = true;
+        await checkRecentMissions(async () => {
+          const updated = await getCurrentUser();
+          setUser({ ...updated.data });
         });
-      });
-
-
+      }
     } catch (err: any) {
       const status = err.response?.status;
 
