@@ -133,16 +133,3 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} – {self.badge.name}"
-
-
-class Tournament(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    participants = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, related_name="tournaments"
-    )
-
-    def __str__(self):
-        return f"{self.name} ({self.start_date.date()} - {self.end_date.date()})"

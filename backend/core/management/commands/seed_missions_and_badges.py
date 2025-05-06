@@ -162,6 +162,18 @@ class Command(BaseCommand):
                 "description": "Prisijungei kiekvieną dieną savaitę iš eilės",
                 "icon": "💎",
             },
+            {
+                "code": "first_application",
+                "name": "Pirmoji paraiška",
+                "description": "Pateikei savo pirmą paraišką į darbą",
+                "icon": "📄",
+            },
+            {
+                "code": "first_finish",
+                "name": "Pirmasis",
+                "description": "Pabaigei savo pirmą darbą",
+                "icon": "🥇",
+            },
         ]
 
         for data in missions:

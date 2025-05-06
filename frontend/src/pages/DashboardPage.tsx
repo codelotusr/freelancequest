@@ -145,22 +145,6 @@ export default function DashboardPage() {
                   buttonColor: "purple",
                   modalType: "usersApplications",
                 },
-                {
-                  title: "Misijos",
-                  icon: <FaFire className="text-red-500 text-2xl" />,
-                  description: "Galll čia rodyti daily misijas, hmm",
-                  buttonText: "Peržiūrėti misijas",
-                  buttonColor: "green",
-                  modalType: "usersMissions",
-                },
-                {
-                  title: "Atsiliepimai",
-                  icon: <FaCommentDots className="text-yellow-500 text-2xl" />,
-                  description: "Peržiūrėk klientų atsiliepimus apie savo darbus.",
-                  buttonText: "Peržiūrėti atsiliepimus",
-                  buttonColor: "gray",
-                  modalType: "usersReviews",
-                },
               ].map((card, index) => (
                 <div
                   key={index}
@@ -180,12 +164,6 @@ export default function DashboardPage() {
                           break;
                         case "usersGigs":
                           setIsInProgressModalOpen(true);
-                          break;
-                        case "usersMissions":
-                          // setIsUsersMissionsModalOpen(true);
-                          break;
-                        case "usersReviews":
-                          // setIsUsersReviewsModalOpen(true); 
                           break;
                         default:
                           break;

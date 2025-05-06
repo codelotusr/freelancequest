@@ -78,22 +78,6 @@ export default function Header({ variant = "welcome" }: HeaderProps) {
               </Button>
               <Button
                 size="sm"
-                color="green"
-                onClick={() => navigate("/missions")}
-                className="text-sm min-w-[120px]"
-              >
-                Misijos
-              </Button>
-              <Button
-                size="sm"
-                color="purple"
-                onClick={() => navigate("/tournaments")}
-                className="text-sm min-w-[120px]"
-              >
-                Turnyrai
-              </Button>
-              <Button
-                size="sm"
                 color="indigo"
                 onClick={() => navigate("/leaderboard")}
                 className="text-sm min-w-[120px]"

@@ -1,13 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { AuthContext, User } from "./authContext";
 import { getCurrentUser, login, logout, register, refreshToken } from "../services/authApi";
-import { checkRecentMissions } from "../services/gamification";
 
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const hasCheckedMissions = useRef(false);
 
   const fetchUser = async () => {
     try {
@@ -18,13 +16,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       setUser(freshUser);
 
-      if (!hasCheckedMissions.current) {
-        hasCheckedMissions.current = true;
-        await checkRecentMissions(async () => {
-          const updated = await getCurrentUser();
-          setUser({ ...updated.data });
-        });
-      }
     } catch (err: any) {
       const status = err.response?.status;
 
@@ -85,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const isOnboardingRequired = !!user && (!user.role || !user.first_name || !user.last_name);
+  const refreshUser = fetchUser;
 
   return (
     <AuthContext.Provider
@@ -96,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logoutUser,
         registerUser,
         isOnboardingRequired,
+        refreshUser,
       }}
     >
       {children}

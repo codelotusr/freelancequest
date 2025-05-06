@@ -12,6 +12,8 @@ from gamification.models import (
 )
 from gigs.models import Application, Gig, GigSubmission, Review
 
+from .utils import notify_user_gamification
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_gamification_profile(sender, instance, created, **kwargs):
@@ -38,7 +40,17 @@ def award_badge(user, code):
     except Badge.DoesNotExist:
         return
 
-    UserBadge.objects.get_or_create(user=user, badge=badge)
+    user_badge, created = UserBadge.objects.get_or_create(user=user, badge=badge)
+    if created:
+        notify_user_gamification(
+            user,
+            {
+                "type": "badge_unlocked",
+                "title": badge.name,
+                "description": badge.description,
+                "icon": getattr(badge.icon, "url", badge.icon),
+            },
+        )
 
 
 @receiver(post_save, sender=Gig)
@@ -54,6 +66,10 @@ def handle_application_created(sender, instance, created, **kwargs):
         award_mission(user, "first_application")
 
         count = Application.objects.filter(applicant=user).count()
+
+        if count == 1:
+            award_badge(user, "first_application")
+
         if count >= 10:
             award_mission(user, "once_10_apps")
 
@@ -85,7 +101,17 @@ def handle_review_created(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=UserMissionProgress)
 def handle_mission_completion(sender, instance, created, **kwargs):
-    if instance.completed:
+    if instance.completed and not instance.seen:
+        notify_user_gamification(
+            instance.user,
+            {
+                "type": "mission_completed",
+                "title": instance.mission.title,
+                "xp": instance.mission.xp_reward,
+                "points": instance.mission.point_reward,
+            },
+        )
+
         total_completed = UserMissionProgress.objects.filter(
             user=instance.user, completed=True
         ).count()

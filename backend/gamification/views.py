@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Any
 
 from django.db import models
@@ -11,7 +10,6 @@ from gamification.models import (
     Badge,
     Mission,
     PlatformBenefit,
-    Tournament,
     UserBadge,
     UserBenefit,
     UserMissionProgress,
@@ -20,7 +18,6 @@ from gamification.serializers import (
     BadgeSerializer,
     MissionSerializer,
     PlatformBenefitSerializer,
-    TournamentSerializer,
     UserBadgeSerializer,
     UserBenefitSerializer,
     UserMissionProgressSerializer,
@@ -140,9 +137,3 @@ class PlatformBenefitViewSet(viewsets.ReadOnlyModelViewSet):
             {"detail": "Nepavyko nusipirkti naudos."},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-
-class TournamentViewSet(viewsets.ModelViewSet):
-    queryset = Tournament.objects.all()
-    serializer_class = TournamentSerializer
-    permission_classes = [permissions.IsAuthenticated]

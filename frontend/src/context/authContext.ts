@@ -37,6 +37,7 @@ export interface AuthContextType {
     password2: string,
   ) => Promise<void>;
   isOnboardingRequired: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(

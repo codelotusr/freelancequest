@@ -4,7 +4,6 @@ from .views import (
     BadgeViewSet,
     MissionViewSet,
     PlatformBenefitViewSet,
-    TournamentViewSet,
     UserBadgeViewSet,
     UserBenefitViewSet,
     UserMissionProgressViewSet,
@@ -19,7 +18,6 @@ router.register("user-benefits", UserBenefitViewSet, basename="user-benefits")
 router.register(
     "platform-benefits", PlatformBenefitViewSet, basename="platform-benefits"
 )
-router.register("tournaments", TournamentViewSet, basename="tournaments")
 
 
 urlpatterns = router.urls

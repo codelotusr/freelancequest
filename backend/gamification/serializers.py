@@ -5,7 +5,6 @@ from gamification.models import (
     GamificationProfile,
     Mission,
     PlatformBenefit,
-    Tournament,
     UserBadge,
     UserBenefit,
     UserMissionProgress,
@@ -61,10 +60,4 @@ class UserBenefitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserBenefit
-        fields = "__all__"
-
-
-class TournamentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tournament
         fields = "__all__"
