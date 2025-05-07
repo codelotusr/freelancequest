@@ -61,6 +61,8 @@ class Mission(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=ONCE)
     point_reward = models.PositiveIntegerField(default=0)
     code = models.CharField(max_length=100, unique=True)
+    goal_count = models.PositiveIntegerField(default=1)
+    track_model = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -95,6 +97,7 @@ class UserMissionProgress(models.Model):
     completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
     seen = models.BooleanField(default=False)
+    current_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ("user", "mission")

@@ -21,17 +21,23 @@ def create_gamification_profile(sender, instance, created, **kwargs):
         GamificationProfile.objects.get_or_create(user=instance)
 
 
-def award_mission(user, code):
+def award_mission(user, code, increment=1):
     try:
         mission = Mission.objects.get(code=code)
     except Mission.DoesNotExist:
         return
 
-    progress, created = UserMissionProgress.objects.get_or_create(
-        user=user, mission=mission
-    )
-    if not progress.completed:
+    progress, _ = UserMissionProgress.objects.get_or_create(user=user, mission=mission)
+
+    if progress.completed:
+        return
+
+    progress.current_count = (progress.current_count or 0) + increment
+
+    if progress.current_count >= (mission.goal_count or 1):
         progress.complete()
+    else:
+        progress.save()
 
 
 def award_badge(user, code):
@@ -64,39 +70,43 @@ def handle_application_created(sender, instance, created, **kwargs):
     if created:
         user = instance.applicant
         award_mission(user, "first_application")
+        award_mission(user, "once_10_apps")
 
         count = Application.objects.filter(applicant=user).count()
 
         if count == 1:
             award_badge(user, "first_application")
-
         if count >= 10:
-            award_mission(user, "once_10_apps")
+            award_badge(user, "application_spammer")
 
 
 @receiver(post_save, sender=GigSubmission)
 def handle_submission_created(sender, instance, created, **kwargs):
     if created:
         award_mission(instance.gig.freelancer, "first_submission")
+        award_mission(instance.gig.freelancer, "once_5_submissions")
 
 
 @receiver(post_save, sender=Review)
 def handle_review_created(sender, instance, created, **kwargs):
     if created:
-        award_mission(instance.gig.client, "write_first_review")
-        reviewer_count = Review.objects.filter(gig__client=instance.gig.client).count()
-        if reviewer_count >= 5:
-            award_badge(instance.gig.client, "reviewer")
+        client = instance.gig.client
+        freelancer = instance.gig.freelancer
 
-        award_mission(instance.gig.freelancer, "receive_review")
+        award_mission(client, "write_first_review")
+        award_mission(client, "write_5_reviews")
 
-        finished = Gig.objects.filter(
-            freelancer=instance.gig.freelancer, status="completed"
-        ).count()
+        review_count = Review.objects.filter(gig__client=client).count()
+        if review_count >= 5:
+            award_badge(client, "reviewer")
+
+        award_mission(freelancer, "receive_review")
+
+        finished = Gig.objects.filter(freelancer=freelancer, status="completed").count()
         if finished >= 1:
-            award_badge(instance.gig.freelancer, "first_finish")
+            award_badge(freelancer, "first_finish")
         if finished >= 10:
-            award_badge(instance.gig.freelancer, "veteran")
+            award_badge(freelancer, "veteran")
 
 
 @receiver(post_save, sender=UserMissionProgress)

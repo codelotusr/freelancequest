@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from .models import Gig
+from .models import Gig, Review
 
 
 class GigFilter(filters.FilterSet):
@@ -25,3 +25,12 @@ class GigFilter(filters.FilterSet):
         if value not in [None, ""]:
             return queryset.filter(**{name: value})
         return queryset
+
+
+class ReviewFilter(filters.FilterSet):
+    class Meta:
+        model = Review
+        fields = {
+            "gig__freelancer": ["exact"],
+            "gig__client": ["exact"],
+        }

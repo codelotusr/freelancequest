@@ -1,4 +1,4 @@
-import { Modal, Button, Label, TextInput, Textarea } from "flowbite-react";
+import { Modal, Button, Label, TextInput, Textarea, Datepicker } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ interface GigModalProps {
     id?: number;
     skills?: number[];
     skill_ids: number[];
+    due_date?: string;
   }) => Promise<void>;
   initialData?: {
     id?: number;
@@ -26,6 +27,7 @@ interface GigModalProps {
     client_username?: string;
     client_id?: number;
     client?: number;
+    due_date?: string;
     skills?: { id: number; name: string }[];
   };
 }
@@ -51,6 +53,8 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
   const [availableSkills, setAvailableSkills] = useState<SkillOption[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<SkillOption[]>([]);
+  const [dueDate, setDueDate] = useState<Date | null>(null);
+
 
   const { isDarkMode } = useDarkMode();
   const isDark = isDarkMode;
@@ -59,6 +63,18 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
     setTitle(initialData?.title || "");
     setDescription(initialData?.description || "");
     setPrice(initialData?.price?.toString() || "");
+
+    if (initialData?.due_date) {
+      const parsedDate = new Date(initialData.due_date);
+      if (!isNaN(parsedDate.getTime())) {
+        setDueDate(parsedDate);
+      } else {
+        setDueDate(null);
+      }
+    } else {
+      setDueDate(null);
+    }
+
     getAllSkills()
       .then((res) => {
         const options = res.data.map((skill: any) => ({
@@ -73,7 +89,6 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
           );
           setSelectedSkills(initial);
         }
-
       })
       .catch((err) => console.error("Failed to fetch skills", err));
   }, [initialData, isOpen]);
@@ -88,6 +103,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
       description,
       price: parseFloat(price),
       skill_ids: selectedSkills.map((s) => s.value),
+      due_date: dueDate?.toISOString().split("T")[0],
     });
     setIsSubmitting(false);
     setTitle("");
@@ -150,6 +166,85 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
             />
           )}
         </div>
+
+        <div>
+          <Label>Terminas</Label>
+          {isFreelancer ? (
+            <p className="text-gray-200">{dueDate?.toLocaleDateString("lt-LT") || "Nenurodyta"}</p>
+          ) : (
+            <Datepicker
+              language="lt"
+              labelTodayButton="Šiandien"
+              labelClearButton="Išvalyti"
+              value={dueDate || undefined}
+              onChange={(date: Date | null) => {
+                console.log("selected date:", date);
+                setDueDate(date);
+              }}
+              weekStart={1}
+              minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+              className="w-full"
+              theme={{
+                root: {
+                  base: "relative",
+                },
+                popup: {
+                  root: {
+                    base:
+                      "z-50 block absolute inset-0 mt-12 rounded-lg border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800",
+                  },
+                },
+                views: {
+                  days: {
+                    header: {
+                      base: "mb-1 grid grid-cols-7",
+                      title: "h-6 text-center text-sm font-medium leading-6 text-gray-500 dark:text-gray-400",
+                    },
+                    items: {
+                      base: "grid w-64 grid-cols-7",
+                      item: {
+                        base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600",
+                        selected: "bg-cyan-700 text-white hover:bg-cyan-600",
+                        disabled: "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500 hover:bg-transparent dark:hover:bg-transparent",
+                      },
+                    },
+                  },
+                  months: {
+                    items: {
+                      base: "grid w-64 grid-cols-4",
+                      item: {
+                        base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600",
+                        selected: "bg-cyan-700 text-white hover:bg-cyan-600",
+                        disabled: "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500 hover:bg-transparent dark:hover:bg-transparent",
+                      },
+                    },
+                  },
+                  years: {
+                    items: {
+                      base: "grid w-64 grid-cols-4",
+                      item: {
+                        base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600",
+                        selected: "bg-cyan-700 text-white hover:bg-cyan-600",
+                        disabled: "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500 hover:bg-transparent dark:hover:bg-transparent",
+                      },
+                    },
+                  },
+                  decades: {
+                    items: {
+                      base: "grid w-64 grid-cols-4",
+                      item: {
+                        base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600",
+                        selected: "bg-cyan-700 text-white hover:bg-cyan-600",
+                        disabled: "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500 hover:bg-transparent dark:hover:bg-transparent",
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          )}
+        </div>
+
 
         {!isFreelancer && (
           <div>
@@ -224,6 +319,9 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
               })}
             />
           </div>
+
+
+
         )}
 
 
@@ -246,7 +344,7 @@ export default function GigModal({ isOpen, onClose, onSubmit, initialData }: Gig
 
           {isClient && (
             <Button
-              disabled={isSubmitting || !title || !description || !price}
+              disabled={isSubmitting || !title || !description || !price || !dueDate}
               onClick={handleSubmit}
             >
               {isSubmitting ? "Išsaugoma..." : initialData ? "Atnaujinti" : "Sukurti"}

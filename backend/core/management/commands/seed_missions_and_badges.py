@@ -16,6 +16,7 @@ class Command(BaseCommand):
                 "xp_reward": 50,
                 "point_reward": 10,
                 "type": "daily",
+                "goal_count": 1,
             },
             {
                 "code": "submit_first_gig",
@@ -24,6 +25,7 @@ class Command(BaseCommand):
                 "xp_reward": 100,
                 "point_reward": 20,
                 "type": "once",
+                "goal_count": 1,
             },
             {
                 "code": "first_application",
@@ -32,6 +34,7 @@ class Command(BaseCommand):
                 "xp_reward": 100,
                 "point_reward": 20,
                 "type": "once",
+                "goal_count": 1,
             },
             {
                 "code": "once_10_apps",
@@ -40,6 +43,7 @@ class Command(BaseCommand):
                 "xp_reward": 500,
                 "point_reward": 50,
                 "type": "once",
+                "goal_count": 10,
             },
             {
                 "code": "first_submission",
@@ -48,6 +52,16 @@ class Command(BaseCommand):
                 "xp_reward": 200,
                 "point_reward": 30,
                 "type": "once",
+                "goal_count": 1,
+            },
+            {
+                "code": "once_5_submissions",
+                "title": "5 atlikti darbai",
+                "description": "Pateik 5 atliktus darbus",
+                "xp_reward": 600,
+                "point_reward": 100,
+                "type": "once",
+                "goal_count": 5,
             },
             {
                 "code": "write_first_review",
@@ -56,6 +70,16 @@ class Command(BaseCommand):
                 "xp_reward": 100,
                 "point_reward": 10,
                 "type": "once",
+                "goal_count": 1,
+            },
+            {
+                "code": "write_5_reviews",
+                "title": "Atsiliepimų serija",
+                "description": "Parašyk 5 atsiliepimus",
+                "xp_reward": 400,
+                "point_reward": 50,
+                "type": "once",
+                "goal_count": 5,
             },
             {
                 "code": "receive_review",
@@ -64,6 +88,7 @@ class Command(BaseCommand):
                 "xp_reward": 100,
                 "point_reward": 10,
                 "type": "once",
+                "goal_count": 1,
             },
             {
                 "code": "first_finish",
@@ -72,6 +97,7 @@ class Command(BaseCommand):
                 "xp_reward": 150,
                 "point_reward": 20,
                 "type": "once",
+                "goal_count": 1,
             },
             {
                 "code": "veteran",
@@ -80,6 +106,7 @@ class Command(BaseCommand):
                 "xp_reward": 1000,
                 "point_reward": 100,
                 "type": "once",
+                "goal_count": 10,
             },
             {
                 "code": "mission_master",
@@ -88,46 +115,7 @@ class Command(BaseCommand):
                 "xp_reward": 1000,
                 "point_reward": 100,
                 "type": "once",
-            },
-            {
-                "code": "weekly_login_3x",
-                "title": "Prisijunk 3 kartus per savaitę",
-                "description": "Prisijunk bent 3 skirtingomis dienomis per savaitę",
-                "xp_reward": 200,
-                "point_reward": 40,
-                "type": "weekly",
-            },
-            {
-                "code": "monthly_submission",
-                "title": "Mėnesio atliktas darbas",
-                "description": "Pateik bent vieną darbą per mėnesį",
-                "xp_reward": 300,
-                "point_reward": 60,
-                "type": "monthly",
-            },
-            {
-                "code": "daily_check_gigs",
-                "title": "Peržiūrėk darbus šiandien",
-                "description": "Atsidaryk pasiūlymų sąrašą bent kartą per dieną",
-                "xp_reward": 50,
-                "point_reward": 10,
-                "type": "daily",
-            },
-            {
-                "code": "apply_streak_3",
-                "title": "3 paraiškų serija",
-                "description": "Pateik paraiškas 3 dienas iš eilės",
-                "xp_reward": 250,
-                "point_reward": 50,
-                "type": "daily",
-            },
-            {
-                "code": "yearly_legend",
-                "title": "Metų legenda",
-                "description": "Būk aktyvus bent kartą per mėnesį ištisus metus",
-                "xp_reward": 5000,
-                "point_reward": 500,
-                "type": "yearly",
+                "goal_count": 10,
             },
         ]
 

@@ -25,12 +25,17 @@ class MissionSerializer(serializers.ModelSerializer):
 
 class UserMissionProgressSerializer(serializers.ModelSerializer):
     mission = MissionSerializer(read_only=True)
+    current_count = serializers.IntegerField()
+    goal_count = serializers.SerializerMethodField()
     seen = serializers.BooleanField()
 
     class Meta:
         model = UserMissionProgress
         fields = "__all__"
         read_only_fields = ["user", "mission", "completed", "completed_at"]
+
+    def get_goal_count(self, obj):
+        return obj.mission.goal_count
 
 
 class BadgeSerializer(serializers.ModelSerializer):

@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import serializers
 
 from gigs.models import Application, Gig, GigSubmission, Review
@@ -6,19 +8,27 @@ from users.serializers import SkillSerializer
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    gig_title = serializers.CharField(source="gig.title", read_only=True)
+    freelancer_id = serializers.IntegerField(source="gig.freelancer.id", read_only=True)
+
     class Meta:
         model = Review
-        fields = ["id", "gig", "rating", "feedback", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = [
+            "id",
+            "gig",
+            "gig_title",
+            "freelancer_id",
+            "rating",
+            "feedback",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "gig_title", "freelancer_id"]
         extra_kwargs = {
             "gig": {"write_only": True},
         }
 
 
 class GigSubmissionSerializer(serializers.ModelSerializer):
-
-    file = serializers.SerializerMethodField()
-
     class Meta:
         model = GigSubmission
         fields = ["id", "gig", "file", "message", "submitted_at"]
@@ -33,6 +43,13 @@ class GigSubmissionSerializer(serializers.ModelSerializer):
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if instance.file and request:
+            data["file"] = request.build_absolute_uri(instance.file.url)
+        return data
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
@@ -108,6 +125,7 @@ class GigSerializer(serializers.ModelSerializer):
             "already_applied",
             "skills",
             "skill_ids",
+            "due_date",
             "submission",
             "created_at",
             "updated_at",
@@ -135,6 +153,11 @@ class GigSerializer(serializers.ModelSerializer):
         if not request or not request.user.is_authenticated:
             return False
         return obj.applications.filter(applicant=request.user).exists()
+
+    def validate_due_date(self, value):
+        if value and value < date.today():
+            raise serializers.ValidationError("Terminas negali būti praeityje.")
+        return value
 
     def create(self, validated_data):
         validated_data["client"] = self.context["request"].user

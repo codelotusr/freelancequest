@@ -22,10 +22,14 @@ export default function GigSubmissionModal({
 
   const handleSubmit = async () => {
     if (!gigId) return;
+    if (!file) {
+      toast.error("Pridėkite failą prieš pateikdami darbą.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("message", message);
-    if (file) formData.append("file", file);
+    formData.append("file", file);
 
     setIsSubmitting(true);
     try {
@@ -74,7 +78,7 @@ export default function GigSubmissionModal({
           <Button color="gray" onClick={onClose}>
             Atšaukti
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !message}>
+          <Button onClick={handleSubmit} disabled={isSubmitting || !message || !file}>
             {isSubmitting ? "Pateikiama..." : "Pateikti"}
           </Button>
         </div>

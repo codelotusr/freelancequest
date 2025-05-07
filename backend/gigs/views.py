@@ -4,11 +4,11 @@ from typing import cast
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .filters import GigFilter
+from .filters import GigFilter, ReviewFilter
 from .models import Application, Gig, Review
 from .serializers import (
     ApplicationSerializer,
@@ -274,7 +274,9 @@ class GigViewSet(viewsets.ModelViewSet):
                 data=submission_data, context={"gig": gig}
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            submission = serializer.save()
+
+            gig.submission = submission
             gig.status = "pending"
             gig.save()
 
@@ -359,3 +361,11 @@ class MyApplicationsView(APIView):
             applications, many=True, context={"request": request}
         )
         return Response(serializer.data)
+
+
+class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Review.objects.select_related("gig__freelancer", "gig__client")
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ReviewFilter
