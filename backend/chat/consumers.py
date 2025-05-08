@@ -4,6 +4,8 @@ from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 
+from gamification.signals import award_mission
+
 from .models import Message
 from .serializers import MessageSerializer
 
@@ -45,6 +47,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             recipient=recipient,
             content=message,
         )
+
+        await sync_to_async(award_mission)(sender, "daily_chat")
 
         serialized_msg = await sync_to_async(lambda: MessageSerializer(msg).data)()
 

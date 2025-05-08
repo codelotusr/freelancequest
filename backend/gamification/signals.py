@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from gamification.models import (
     Badge,
@@ -27,7 +30,22 @@ def award_mission(user, code, increment=1):
     except Mission.DoesNotExist:
         return
 
-    progress, _ = UserMissionProgress.objects.get_or_create(user=user, mission=mission)
+    now = timezone.now()
+    progress, _ = UserMissionProgress.objects.get_or_create(
+        user=user, mission=mission, defaults={"current_count": 0}
+    )
+
+    # Reset progress if needed based on type
+    if mission.type == "daily" and progress.updated_at.date() != now.date():
+        progress.current_count = 0
+    elif mission.type == "weekly":
+        start_of_week = now - timedelta(days=now.weekday())
+        if progress.updated_at < start_of_week:
+            progress.current_count = 0
+    elif mission.type == "monthly" and progress.updated_at.month != now.month:
+        progress.current_count = 0
+    elif mission.type == "yearly" and progress.updated_at.year != now.year:
+        progress.current_count = 0
 
     if progress.completed:
         return
@@ -71,9 +89,12 @@ def handle_application_created(sender, instance, created, **kwargs):
         user = instance.applicant
         award_mission(user, "first_application")
         award_mission(user, "once_10_apps")
+        award_mission(user, "daily_apply")
+        award_mission(user, "weekly_5_apps")
+        award_mission(user, "monthly_apps")
+        award_mission(user, "yearly_100_apps")
 
         count = Application.objects.filter(applicant=user).count()
-
         if count == 1:
             award_badge(user, "first_application")
         if count >= 10:
@@ -83,8 +104,12 @@ def handle_application_created(sender, instance, created, **kwargs):
 @receiver(post_save, sender=GigSubmission)
 def handle_submission_created(sender, instance, created, **kwargs):
     if created:
-        award_mission(instance.gig.freelancer, "first_submission")
-        award_mission(instance.gig.freelancer, "once_5_submissions")
+        freelancer = instance.gig.freelancer
+        award_mission(freelancer, "first_submission")
+        award_mission(freelancer, "once_5_submissions")
+        award_mission(freelancer, "weekly_submissions")
+        award_mission(freelancer, "monthly_submissions")
+        award_mission(freelancer, "yearly_50_submissions")
 
 
 @receiver(post_save, sender=Review)
@@ -95,6 +120,8 @@ def handle_review_created(sender, instance, created, **kwargs):
 
         award_mission(client, "write_first_review")
         award_mission(client, "write_5_reviews")
+        award_mission(client, "daily_review")
+        award_mission(client, "monthly_reviews")
 
         review_count = Review.objects.filter(gig__client=client).count()
         if review_count >= 5:

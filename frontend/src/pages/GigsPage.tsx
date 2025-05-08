@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../services/axios";
 import { Button, TextInput, Label } from "flowbite-react";
-import { FaMoneyBillWave, FaClipboardCheck, FaUserTie } from "react-icons/fa";
+import { FaMoneyBillWave, FaClipboardCheck, FaUserTie, FaCalendar } from "react-icons/fa";
 import { useAuth } from "../context/useAuth";
 import GigModal from "../components/GigModal";
 import toast from "react-hot-toast";
@@ -197,6 +197,10 @@ export default function GigsPage() {
                 <div className="flex items-center gap-2">
                   <FaClipboardCheck className="text-blue-400" />
                   <span>{gig.status_display}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaCalendar className="text-orange-400" />
+                  <span>{gig.due_date}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaUserTie className="text-purple-400" />

@@ -1,10 +1,13 @@
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import QuerySet
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+User = get_user_model()
 
 from gamification.models import (
     Badge,
@@ -16,6 +19,7 @@ from gamification.models import (
 )
 from gamification.serializers import (
     BadgeSerializer,
+    LeaderboardEntrySerializer,
     MissionSerializer,
     PlatformBenefitSerializer,
     UserBadgeSerializer,
@@ -137,3 +141,27 @@ class PlatformBenefitViewSet(viewsets.ReadOnlyModelViewSet):
             {"detail": "Nepavyko nusipirkti naudos."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class LeaderboardViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["get"])
+    def freelancers(self, request):
+        freelancers = (
+            User.objects.filter(role="freelancer")
+            .select_related("gamification_profile")
+            .order_by("-gamification_profile__xp", "-gamification_profile__level")
+        )
+        serializer = LeaderboardEntrySerializer(freelancers, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def clients(self, request):
+        clients = (
+            User.objects.filter(role="client")
+            .select_related("gamification_profile")
+            .order_by("-gamification_profile__xp", "-gamification_profile__level")
+        )
+        serializer = LeaderboardEntrySerializer(clients, many=True)
+        return Response(serializer.data)

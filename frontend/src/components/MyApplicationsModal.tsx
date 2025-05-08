@@ -55,7 +55,14 @@ export default function MyApplicationsModal({ show, onClose, onViewGig }: MyAppl
                   <h3 className="text-white font-semibold">{app.gig_title}</h3>
                   <p className="text-gray-300 text-sm">Būsena: {app.status_display}</p>
                   <p className="text-sm text-gray-400">
-                    Pateikta: {new Date(app.applied_at).toLocaleString()}
+                    Pateikta: {new Date(app.applied_at).toLocaleString("lt-LT", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
                   </p>
                 </div>
 
@@ -67,13 +74,17 @@ export default function MyApplicationsModal({ show, onClose, onViewGig }: MyAppl
                   >
                     Peržiūrėti
                   </Button>
-                  <Button
-                    size="xs"
-                    color="red"
-                    onClick={() => handleCancel(app.gig, app.applicant)}
-                  >
-                    Atšaukti
-                  </Button>
+
+                  {app.status === "pending" && (
+                    <Button
+                      size="xs"
+                      color="red"
+                      onClick={() => handleCancel(app.gig, app.applicant)}
+                    >
+                      Atšaukti
+                    </Button>
+                  )}
+
                 </div>
               </li>
 

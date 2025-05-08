@@ -1,8 +1,16 @@
 import { Modal, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import api from "../services/axios";
-import { FaFileUpload, FaCommentDots, FaComments } from "react-icons/fa";
+import {
+  FaFileUpload,
+  FaCommentDots,
+  FaComments,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaEye,
+} from "react-icons/fa";
 import ChatModal from "../components/ChatModal";
+import GigModal from "../components/GigModal";
 
 interface MyInProgressGigsModalProps {
   show: boolean;
@@ -17,25 +25,27 @@ export default function MyInProgressGigsModal({
 }: MyInProgressGigsModalProps) {
   const [gigs, setGigs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
+  const [selectedGig, setSelectedGig] = useState<any | null>(null);
+  const [isGigModalOpen, setIsGigModalOpen] = useState(false);
 
   useEffect(() => {
     if (show) {
       api.get("/gigs/my").then((res) => {
-        const activeGigs = res.data.filter((g: any) => g.status === "in_progress" || g.status === "pending");
+        const activeGigs = res.data.filter(
+          (g: any) => g.status === "in_progress" || g.status === "pending"
+        );
         setGigs(activeGigs);
         setLoading(false);
       });
     }
   }, [show]);
 
-  const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
-
-
   return (
-    <Modal show={show} onClose={onClose}>
-      <div className="p-6 bg-white dark:bg-gray-800 space-y-6 rounded-lg max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-white">Tavo vykdomi darbai</h2>
+    <Modal show={show} onClose={onClose} size="lg">
+      <div className="p-6 bg-white dark:bg-gray-900 space-y-6 rounded-lg max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold text-white">Tavo vykdomi darbai</h2>
 
         {loading ? (
           <p className="text-gray-300">Kraunama...</p>
@@ -46,21 +56,48 @@ export default function MyInProgressGigsModal({
             {gigs.map((gig) => (
               <li
                 key={gig.id}
-                className="border border-gray-600 rounded-lg p-4 bg-gradient-to-br from-gray-800 via-gray-900 to-black"
+                className="border border-gray-700 rounded-xl p-5 bg-gradient-to-br from-gray-800 via-gray-900 to-black"
               >
-                <h3 className="text-white font-semibold">{gig.title}</h3>
-                <p className="text-gray-300">{gig.description}</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Atlygis: <strong>{gig.price}€</strong>
-                </p>
+                <div className="mb-4 space-y-1">
+                  <h3 className="text-lg font-bold text-white">{gig.title}</h3>
+                </div>
 
-                <div className="flex justify-end gap-2 mt-4">
+                <div className="flex gap-6 text-sm text-gray-300 mb-4">
+                  <div className="flex items-center gap-2">
+                    <FaMoneyBillWave className="text-green-400" />
+                    <span>
+                      <strong>{gig.price} €</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaCalendarAlt className="text-blue-400" />
+                    <span>
+                      {gig.due_date
+                        ? new Date(gig.due_date).toLocaleDateString("lt-LT")
+                        : "Nenurodyta"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                  <Button
+                    size="xs"
+                    color="blue"
+                    onClick={() => {
+                      setSelectedGig(gig);
+                      setIsGigModalOpen(true);
+                    }}
+                    className="flex items-center gap-1 justify-center"
+                  >
+                    <FaEye className="text-xs" /> Peržiūrėti darbą
+                  </Button>
+
                   {gig.status === "in_progress" && (
                     <Button
                       size="xs"
                       color="green"
                       onClick={() => onSubmitClick(gig)}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 justify-center"
                     >
                       <FaFileUpload className="text-xs" /> Pateikti darbą
                     </Button>
@@ -72,12 +109,12 @@ export default function MyInProgressGigsModal({
                         href={gig.submission.file}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block"
+                        className="block"
                       >
                         <Button
                           size="xs"
-                          color="blue"
-                          className="flex items-center gap-1"
+                          color="purple"
+                          className="flex items-center gap-1 justify-center w-full"
                         >
                           <FaFileUpload className="text-xs" /> Atsisiųsti darbą
                         </Button>
@@ -87,7 +124,7 @@ export default function MyInProgressGigsModal({
                         size="xs"
                         color="green"
                         onClick={() => onSubmitClick(gig)}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 justify-center"
                       >
                         <FaFileUpload className="text-xs" /> Pakeisti darbą
                       </Button>
@@ -96,16 +133,16 @@ export default function MyInProgressGigsModal({
 
                   <Button
                     size="xs"
-                    color="yellow"
+                    color="indigo"
                     disabled
-                    className="flex items-center gap-1 opacity-60"
+                    className="flex items-center gap-1 opacity-60 justify-center"
                   >
                     <FaCommentDots className="text-xs" /> Komentarai
                   </Button>
 
                   <Button
                     size="xs"
-                    color="blue"
+                    color="yellow"
                     onClick={() => {
                       const partner = gig.client_username;
                       if (partner) {
@@ -113,22 +150,12 @@ export default function MyInProgressGigsModal({
                         setChatModalOpen(true);
                       }
                     }}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 justify-center"
                   >
                     <FaComments className="text-xs" /> Pokalbis
                   </Button>
-
                 </div>
-                {chatPartnerUsername && (
-                  <ChatModal
-                    show={chatModalOpen}
-                    onClose={() => {
-                      setChatModalOpen(false);
-                      setChatPartnerUsername(null);
-                    }}
-                    otherUsername={chatPartnerUsername}
-                  />
-                )}
+
               </li>
             ))}
           </ul>
@@ -139,6 +166,32 @@ export default function MyInProgressGigsModal({
             Uždaryti
           </Button>
         </div>
+
+        {chatPartnerUsername && (
+          <ChatModal
+            show={chatModalOpen}
+            onClose={() => {
+              setChatModalOpen(false);
+              setChatPartnerUsername(null);
+            }}
+            otherUsername={chatPartnerUsername}
+          />
+        )}
+
+        {selectedGig && (
+          <GigModal
+            isOpen={isGigModalOpen}
+            onClose={() => {
+              setIsGigModalOpen(false);
+              setSelectedGig(null);
+            }}
+            initialData={selectedGig}
+            onSubmit={() => {
+              setIsGigModalOpen(false);
+              setSelectedGig(null);
+            }}
+          />
+        )}
       </div>
     </Modal>
   );

@@ -1,4 +1,8 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
+User = get_user_model()
+
 
 from gamification.models import (
     Badge,
@@ -66,3 +70,23 @@ class UserBenefitSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBenefit
         fields = "__all__"
+
+
+class LeaderboardEntrySerializer(serializers.ModelSerializer):
+    level = serializers.IntegerField(source="gamification_profile.level")
+    xp = serializers.IntegerField(source="gamification_profile.xp")
+    points = serializers.IntegerField(source="gamification_profile.points")
+    profile_picture = serializers.ImageField(allow_null=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "profile_picture",
+            "level",
+            "xp",
+            "points",
+        ]

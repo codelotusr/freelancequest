@@ -98,6 +98,7 @@ class UserMissionProgress(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     seen = models.BooleanField(default=False)
     current_count = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("user", "mission")

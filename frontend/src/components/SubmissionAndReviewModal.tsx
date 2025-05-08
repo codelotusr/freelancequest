@@ -21,9 +21,7 @@ export default function SubmissionAndReviewModal({
   const [rating, setRating] = useState("5");
   const [loading, setLoading] = useState(false);
 
-  const handleApprove = async () => {
-    setShowReview(true);
-  };
+  const handleApprove = () => setShowReview(true);
 
   const handleDecline = async () => {
     try {
@@ -56,50 +54,70 @@ export default function SubmissionAndReviewModal({
     }
   };
 
-
   if (!gig?.submission) return null;
 
+  const isReviewComplete = gig.status === "completed" || !!gig.review;
+
   return (
-    <Modal show={show} onClose={onClose}>
-      <div className="p-6 space-y-6 bg-white dark:bg-gray-800 rounded-lg">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+    <Modal show={show} onClose={onClose} size="lg">
+      <div className="p-6 space-y-6 bg-white dark:bg-gray-900 rounded-lg">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
           Darbo pateikimas
         </h3>
 
-        <p className="text-gray-300 whitespace-pre-wrap">{gig.submission.message}</p>
+        <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap border border-gray-300 dark:border-gray-700 rounded p-4 bg-gray-50 dark:bg-gray-800">
+          {gig.submission.message}
+        </div>
 
         <a
           href={gig.submission.file}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 underline"
+          className="block text-blue-500 hover:underline font-medium"
         >
           Atsisiųsti pateiktą failą
         </a>
 
-        {!showReview ? (
+        {!isReviewComplete && !showReview && (
           <div className="flex justify-end gap-2 pt-4">
-            <Button color="red" onClick={handleDecline} disabled={loading}>
-              Atmesti
+            <Button color="gray" onClick={onClose}>
+              Uždaryti
             </Button>
-            <Button color="green" onClick={handleApprove}>
-              Patvirtinti ir rašyti atsiliepimą
-            </Button>
+            {gig.status !== "completed" && (
+              <>
+                <Button color="red" onClick={handleDecline} disabled={loading}>
+                  Atmesti
+                </Button>
+                <Button color="green" onClick={handleApprove}>
+                  Patvirtinti ir rašyti atsiliepimą
+                </Button>
+              </>
+            )}
           </div>
-        ) : (
+        )}
+
+        {!isReviewComplete && showReview && (
           <div className="space-y-4 pt-4">
             <div>
-              <Label>Atsiliepimas</Label>
+              <Label htmlFor="feedback">Atsiliepimas</Label>
               <Textarea
+                id="feedback"
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Įveskite komentarą apie atliktą darbą..."
+                className="mt-1"
+                rows={4}
               />
             </div>
 
             <div>
-              <Label>Įvertinimas</Label>
-              <Select value={rating} onChange={(e) => setRating(e.target.value)}>
+              <Label htmlFor="rating">Įvertinimas</Label>
+              <Select
+                id="rating"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                className="mt-1"
+              >
                 {[5, 4, 3, 2, 1].map((r) => (
                   <option key={r} value={r}>
                     {r} ★
@@ -110,12 +128,20 @@ export default function SubmissionAndReviewModal({
 
             <div className="flex justify-end gap-2">
               <Button color="gray" onClick={onClose}>
-                Atšaukti
+                Uždaryti
               </Button>
               <Button color="green" onClick={handleSubmitReview} disabled={loading}>
                 Pateikti atsiliepimą
               </Button>
             </div>
+          </div>
+        )}
+
+        {isReviewComplete && (
+          <div className="flex justify-end pt-4">
+            <Button color="gray" onClick={onClose}>
+              Uždaryti
+            </Button>
           </div>
         )}
       </div>

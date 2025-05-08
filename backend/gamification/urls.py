@@ -1,7 +1,9 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
     BadgeViewSet,
+    LeaderboardViewSet,
     MissionViewSet,
     PlatformBenefitViewSet,
     UserBadgeViewSet,
@@ -18,6 +20,6 @@ router.register("user-benefits", UserBenefitViewSet, basename="user-benefits")
 router.register(
     "platform-benefits", PlatformBenefitViewSet, basename="platform-benefits"
 )
-
+router.register("leaderboard", LeaderboardViewSet, basename="leaderboard")
 
 urlpatterns = router.urls

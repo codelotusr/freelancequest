@@ -2,7 +2,6 @@ import { Route, Routes } from "react-router-dom";
 import WelcomePage from "../pages/WelcomePage";
 import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
-import TempPage from "../pages/TempPage";
 import OnboardingPage from "../pages/onboarding/OnboardingPage";
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -12,6 +11,7 @@ import OnboardingLayout from "../layouts/OnboardingLayout";
 import DashboardPage from "../pages/DashboardPage";
 import GigsPage from "../pages/GigsPage";
 import ProfilePage from "../pages/ProfilePage";
+import LeaderboardPage from "../pages/LeaderboardPage";
 
 export default function AppRoutes() {
   return (
@@ -28,10 +28,10 @@ export default function AppRoutes() {
           <Route path="/onboarding" element={<OnboardingPage />} />
         </Route>
         <Route element={<MainLayout />}>
-          <Route path="/temp" element={<TempPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/gigs" element={<GigsPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
         </Route>
       </Route>
     </Routes >

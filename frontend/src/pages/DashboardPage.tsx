@@ -52,7 +52,7 @@ export default function DashboardPage() {
   const clientGigs = gigs.filter((gig) => gig.client === user.pk);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
-
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleGigSubmit = async (gigData: {
     title: string;
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                   title: "Vykdomi darbai",
                   icon: <FaBriefcase className="text-blue-500 text-2xl" />,
                   description: "Čia matysi visus darbus, kuriuos šiuo metu vykdai.",
-                  buttonText: "Peržiūrėti darbus",
+                  buttonText: "Peržiūrėti savo darbus",
                   buttonColor: "blue",
                   modalType: "usersGigs",
                 },
@@ -144,6 +144,22 @@ export default function DashboardPage() {
                   buttonText: "Peržiūrėti paraiškas",
                   buttonColor: "purple",
                   modalType: "usersApplications",
+                },
+                {
+                  title: "Darbų sąrašas",
+                  icon: <FaFileAlt className="text-yellow-500 text-2xl" />,
+                  description: "Naršyk visus platformos pasiūlymus.",
+                  buttonText: "Peržiūrėti visus darbus",
+                  buttonColor: "yellow",
+                  link: "/gigs",
+                },
+                {
+                  title: "Lyderių lentelė",
+                  icon: <FaFire className="text-red-500 text-2xl" />,
+                  description: "Palygink savo pažangą su kitais naudotojais.",
+                  buttonText: "Žiūrėti lentelę",
+                  buttonColor: "red",
+                  link: "/leaderboard",
                 },
               ].map((card, index) => (
                 <div
@@ -157,19 +173,21 @@ export default function DashboardPage() {
                   <p className="text-gray-300 mb-8 text-[15px]">{card.description}</p>
                   <Button
                     color={card.buttonColor as any}
+                    className="w-full text-sm py-2"
                     onClick={() => {
-                      switch (card.modalType) {
-                        case "usersApplications":
-                          setIsApplicationsModalOpen(true);
-                          break;
-                        case "usersGigs":
-                          setIsInProgressModalOpen(true);
-                          break;
-                        default:
-                          break;
+                      if (card.link) {
+                        window.location.href = card.link;
+                      } else {
+                        switch (card.modalType) {
+                          case "usersApplications":
+                            setIsApplicationsModalOpen(true);
+                            break;
+                          case "usersGigs":
+                            setIsInProgressModalOpen(true);
+                            break;
+                        }
                       }
                     }}
-                    className="w-full text-sm py-2"
                   >
                     {card.buttonText}
                   </Button>
@@ -241,22 +259,23 @@ export default function DashboardPage() {
                             </Button>
                           )}
 
-                          {(gig.status === "in_progress" || gig.status === "pending" || gig.status == "completed") && (
+                          {gig.status !== "available" && (
                             <Button
                               color="green"
                               size="xs"
                               onClick={() => {
-                                setSelectedGig(gig);
-                                setIsReviewModalOpen(true);
+                                if (gig.submission) {
+                                  setSelectedGig(gig);
+                                  setIsReviewModalOpen(true);
+                                }
                               }}
+                              disabled={!gig.submission}
                               className="flex items-center gap-1 px-3 py-1.5"
                             >
                               <FaFileAlt className="text-sm" />
                               Pateiktas darbas
                             </Button>
                           )}
-
-
 
                           {gig.status === "in_progress" && (
                             <>
@@ -392,6 +411,12 @@ export default function DashboardPage() {
             setIsSubmissionModalOpen(false);
             setGigToSubmit(null);
           }}
+          onSubmitted={() => {
+            setIsSubmissionModalOpen(false);
+            setIsInProgressModalOpen(false);
+            setGigToSubmit(null);
+            setRefreshKey((k) => k + 1);
+          }}
         />
 
         <MyInProgressGigsModal
@@ -401,7 +426,9 @@ export default function DashboardPage() {
             setGigToSubmit(gig);
             setIsSubmissionModalOpen(true);
           }}
+          refreshKey={refreshKey}
         />
+
 
         <SubmissionAndReviewModal
           show={isReviewModalOpen}
