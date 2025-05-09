@@ -79,6 +79,23 @@ export default function MyInProgressGigsModal({
                   </div>
                 </div>
 
+                {gig.latest_instruction && (
+                  <a
+                    href={gig.latest_instruction.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mb-3"
+                  >
+                    <Button
+                      size="xs"
+                      color="dark"
+                      className="flex items-center gap-1 justify-center w-full"
+                    >
+                      <FaFileUpload className="text-xs" /> Peržiūrėti kliento nurodymus
+                    </Button>
+                  </a>
+                )}
+
                 <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
                   <Button
                     size="xs"
@@ -103,10 +120,10 @@ export default function MyInProgressGigsModal({
                     </Button>
                   )}
 
-                  {gig.status === "pending" && gig.submission && (
+                  {gig.status === "pending" && gig.latest_submission && (
                     <>
                       <a
-                        href={gig.submission.file}
+                        href={gig.latest_submission.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block"
@@ -116,7 +133,7 @@ export default function MyInProgressGigsModal({
                           color="purple"
                           className="flex items-center gap-1 justify-center w-full"
                         >
-                          <FaFileUpload className="text-xs" /> Atsisiųsti darbą
+                          <FaFileUpload className="text-xs" /> Atsisiųsti paskutinį darbą
                         </Button>
                       </a>
 
@@ -156,6 +173,28 @@ export default function MyInProgressGigsModal({
                   </Button>
                 </div>
 
+                {gig.submissions && gig.submissions.length > 1 && (
+                  <details className="mt-4 text-sm text-gray-400">
+                    <summary className="cursor-pointer hover:underline">
+                      Visi pateikti darbai ({gig.submissions.length})
+                    </summary>
+                    <ul className="ml-4 mt-2 space-y-1">
+                      {gig.submissions.map((sub: any) => (
+                        <li key={sub.id}>
+                          <a
+                            href={sub.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline"
+                          >
+                            {new Date(sub.submitted_at).toLocaleString("lt-LT")}
+                          </a>{" "}
+                          — {sub.message || "Be žinutės"}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </li>
             ))}
           </ul>

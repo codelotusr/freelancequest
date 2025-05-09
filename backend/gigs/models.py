@@ -73,11 +73,33 @@ class Application(models.Model):
         return f"{self.applicant} -> {self.gig.title} ({self.status})"
 
 
+def submission_upload_path(instance, filename):
+    return f"submissions/gig_{instance.gig.id}/user_{instance.user.id}/{filename}"
+
+
+def instruction_upload_path(instance, filename):
+    return (
+        f"instructions/gig_{instance.gig.id}/user_{instance.uploaded_by.id}/{filename}"
+    )
+
+
 class GigSubmission(models.Model):
-    gig = models.OneToOneField(Gig, on_delete=models.CASCADE, related_name="submission")
-    file = models.FileField(upload_to="submissions/")
+    gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name="submissions")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=submission_upload_path)
     message = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Submission for {self.gig.title}"
+        return f"Submission by {self.user} for {self.gig.title}"
+
+
+class ClientInstruction(models.Model):
+    gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name="instructions")
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=instruction_upload_path)
+    description = models.TextField(blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Instruction by {self.uploaded_by} for {self.gig.title}"

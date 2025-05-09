@@ -264,18 +264,19 @@ export default function DashboardPage() {
                               color="green"
                               size="xs"
                               onClick={() => {
-                                if (gig.submission) {
+                                if (gig.latest_submission) {
                                   setSelectedGig(gig);
                                   setIsReviewModalOpen(true);
                                 }
                               }}
-                              disabled={!gig.submission}
+                              disabled={!gig.latest_submission}
                               className="flex items-center gap-1 px-3 py-1.5"
                             >
                               <FaFileAlt className="text-sm" />
                               Pateiktas darbas
                             </Button>
                           )}
+
 
                           {gig.status === "in_progress" && (
                             <>

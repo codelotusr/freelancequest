@@ -12,7 +12,9 @@ from .filters import GigFilter, ReviewFilter
 from .models import Application, Gig, Review
 from .serializers import (
     ApplicationSerializer,
+    ClientInstructionSerializer,
     GigSerializer,
+    GigSubmissionListSerializer,
     GigSubmissionSerializer,
     ReviewSerializer,
 )
@@ -258,32 +260,20 @@ class GigViewSet(viewsets.ModelViewSet):
                 status=403,
             )
 
-        submission_data = {
-            "file": request.FILES.get("file"),
-            "message": request.data.get("message", ""),
-        }
-
-        if hasattr(gig, "submission"):
-            submission = gig.submission
-            if submission_data["file"]:
-                submission.file = submission_data["file"]
-            submission.message = submission_data["message"]
-            submission.save()
-        else:
-            serializer = GigSubmissionSerializer(
-                data=submission_data, context={"gig": gig}
-            )
-            serializer.is_valid(raise_exception=True)
-            submission = serializer.save()
-
-            gig.submission = submission
-            gig.status = "pending"
-            gig.save()
-
-        return Response(
-            {"detail": "Darbas pateiktas arba atnaujintas."},
-            status=200,
+        serializer = GigSubmissionSerializer(
+            data={
+                "file": request.FILES.get("file"),
+                "message": request.data.get("message", ""),
+            },
+            context={"gig": gig, "request": request},
         )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        gig.status = "pending"
+        gig.save()
+
+        return Response({"detail": "Darbas pateiktas."}, status=201)
 
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
@@ -296,16 +286,19 @@ class GigViewSet(viewsets.ModelViewSet):
                 {"detail": "Tik klientas gali patvirtinti darbą."}, status=403
             )
 
-        if not hasattr(gig, "submission"):
+        latest_submission = gig.submissions.order_by("-submitted_at").first()
+        if not latest_submission:
             return Response({"detail": "Darbas dar nepateiktas."}, status=400)
 
         if gig.status != "pending":
-            return Response({"detail": "Darbas jau patvirtintas."}, status=400)
+            return Response(
+                {"detail": "Darbas jau patvirtintas arba netinkamoje būsenoje."},
+                status=400,
+            )
 
         gig.status = "completed"
         gig.save()
 
-        # Optional review creation
         rating = request.data.get("rating")
         feedback = request.data.get("feedback")
 
@@ -333,7 +326,8 @@ class GigViewSet(viewsets.ModelViewSet):
         if gig.client != request.user:
             return Response({"detail": "Tik klientas gali atmesti darbą."}, status=403)
 
-        if not hasattr(gig, "submission"):
+        latest_submission = gig.submissions.order_by("-submitted_at").first()
+        if not latest_submission:
             return Response({"detail": "Darbas dar nepateiktas."}, status=400)
 
         if gig.status != "pending":
@@ -348,6 +342,74 @@ class GigViewSet(viewsets.ModelViewSet):
             {"detail": "Darbas atmestas. Specialistas gali pateikti iš naujo."},
             status=200,
         )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="submissions",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def list_submissions(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user and gig.freelancer != request.user:
+            return Response(
+                {
+                    "detail": "Tik klientas arba paskirtas specialistas gali matyti pateikimus."
+                },
+                status=403,
+            )
+
+        submissions = gig.submissions.all().order_by("-submitted_at")
+        serializer = GigSubmissionListSerializer(
+            submissions, many=True, context=self.get_serializer_context()
+        )
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="instructions",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def list_instructions(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user and gig.freelancer != request.user:
+            return Response(
+                {
+                    "detail": "Tik klientas arba paskirtas specialistas gali matyti nurodymus."
+                },
+                status=403,
+            )
+
+        instructions = gig.instructions.all().order_by("-uploaded_at")
+        serializer = ClientInstructionSerializer(
+            instructions, many=True, context=self.get_serializer_context()
+        )
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="submit-instruction",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def submit_instruction(self, request, pk=None):
+        gig = self.get_object()
+
+        if gig.client != request.user:
+            return Response(
+                {"detail": "Tik klientas gali pateikti nurodymus."}, status=403
+            )
+
+        serializer = ClientInstructionSerializer(
+            data=request.data, context={"request": request, "gig": gig}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=201)
 
 
 class MyApplicationsView(APIView):

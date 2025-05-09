@@ -2,7 +2,7 @@ from datetime import date
 
 from rest_framework import serializers
 
-from gigs.models import Application, Gig, GigSubmission, Review
+from gigs.models import Application, ClientInstruction, Gig, GigSubmission, Review
 from users.models import Skill
 from users.serializers import SkillSerializer
 
@@ -31,18 +31,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 class GigSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = GigSubmission
-        fields = ["id", "gig", "file", "message", "submitted_at"]
-        read_only_fields = ["id", "submitted_at", "gig"]
+        fields = ["id", "gig", "user", "file", "message", "submitted_at"]
+        read_only_fields = ["id", "submitted_at", "gig", "user"]
 
     def create(self, validated_data):
         validated_data["gig"] = self.context["gig"]
+        validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
-
-    def get_file(self, obj):
-        request = self.context.get("request")
-        if obj.file and request:
-            return request.build_absolute_uri(obj.file.url)
-        return None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -50,6 +45,53 @@ class GigSubmissionSerializer(serializers.ModelSerializer):
         if instance.file and request:
             data["file"] = request.build_absolute_uri(instance.file.url)
         return data
+
+
+class GigSubmissionListSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GigSubmission
+        fields = ["id", "file", "file_url", "message", "submitted_at", "user"]
+        read_only_fields = fields
+
+    def get_file_url(self, instance):
+        request = self.context.get("request")
+        if instance.file and request:
+            return request.build_absolute_uri(instance.file.url)
+        return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return data
+
+
+class ClientInstructionSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ClientInstruction
+        fields = [
+            "id",
+            "gig",
+            "uploaded_by",
+            "file",
+            "file_url",
+            "description",
+            "uploaded_at",
+        ]
+        read_only_fields = ["id", "gig", "uploaded_by", "uploaded_at"]
+
+    def create(self, validated_data):
+        validated_data["gig"] = self.context["gig"]
+        validated_data["uploaded_by"] = self.context["request"].user
+        return super().create(validated_data)
+
+    def get_file_url(self, instance):
+        request = self.context.get("request")
+        if instance.file and request:
+            return request.build_absolute_uri(instance.file.url)
+        return None
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
@@ -103,7 +145,9 @@ class GigSerializer(serializers.ModelSerializer):
     skill_ids = serializers.PrimaryKeyRelatedField(
         many=True, write_only=True, queryset=Skill.objects.all(), source="skills"
     )
-    submission = GigSubmissionSerializer(required=False, allow_null=True)
+    submissions = GigSubmissionListSerializer(many=True, read_only=True)
+    latest_submission = serializers.SerializerMethodField()
+    latest_instruction = serializers.SerializerMethodField()
 
     class Meta:
         model = Gig
@@ -126,7 +170,9 @@ class GigSerializer(serializers.ModelSerializer):
             "skills",
             "skill_ids",
             "due_date",
-            "submission",
+            "submissions",
+            "latest_submission",
+            "latest_instruction",
             "created_at",
             "updated_at",
         ]
@@ -153,6 +199,26 @@ class GigSerializer(serializers.ModelSerializer):
         if not request or not request.user.is_authenticated:
             return False
         return obj.applications.filter(applicant=request.user).exists()
+
+    def get_latest_submission(self, obj):
+        latest = obj.submissions.order_by("-submitted_at").first()
+        if latest:
+            request = self.context.get("request")
+            serializer = GigSubmissionListSerializer(
+                latest, context={"request": request}
+            )
+            return serializer.data
+        return None
+
+    def get_latest_instruction(self, obj):
+        latest = obj.instructions.order_by("-uploaded_at").first()
+        if latest:
+            request = self.context.get("request")
+            serializer = ClientInstructionSerializer(
+                latest, context={"request": request}
+            )
+            return serializer.data
+        return None
 
     def validate_due_date(self, value):
         if value and value < date.today():

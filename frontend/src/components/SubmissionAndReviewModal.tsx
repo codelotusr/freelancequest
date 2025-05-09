@@ -54,7 +54,9 @@ export default function SubmissionAndReviewModal({
     }
   };
 
-  if (!gig?.submission) return null;
+  const submission = gig?.latest_submission;
+
+  if (!submission) return null;
 
   const isReviewComplete = gig.status === "completed" || !!gig.review;
 
@@ -66,11 +68,11 @@ export default function SubmissionAndReviewModal({
         </h3>
 
         <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap border border-gray-300 dark:border-gray-700 rounded p-4 bg-gray-50 dark:bg-gray-800">
-          {gig.submission.message}
+          {submission.message}
         </div>
 
         <a
-          href={gig.submission.file}
+          href={submission.file_url}
           target="_blank"
           rel="noopener noreferrer"
           className="block text-blue-500 hover:underline font-medium"
@@ -128,7 +130,7 @@ export default function SubmissionAndReviewModal({
 
             <div className="flex justify-end gap-2">
               <Button color="gray" onClick={onClose}>
-                Uždaryti
+                Atšaukti
               </Button>
               <Button color="green" onClick={handleSubmitReview} disabled={loading}>
                 Pateikti atsiliepimą

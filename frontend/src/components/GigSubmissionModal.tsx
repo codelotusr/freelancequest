@@ -61,6 +61,7 @@ export default function GigSubmissionModal({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Aprašykite pateikiamą darbą..."
             rows={4}
+            required
           />
         </div>
 
@@ -69,8 +70,9 @@ export default function GigSubmissionModal({
           <FileInput
             id="file"
             onChange={(e) => {
-              if (e.target.files) setFile(e.target.files[0]);
+              if (e.target.files?.length) setFile(e.target.files[0]);
             }}
+            required
           />
         </div>
 
@@ -78,7 +80,11 @@ export default function GigSubmissionModal({
           <Button color="gray" onClick={onClose}>
             Atšaukti
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !message || !file}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !file}
+            color="green"
+          >
             {isSubmitting ? "Pateikiama..." : "Pateikti"}
           </Button>
         </div>
