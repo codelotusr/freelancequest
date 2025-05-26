@@ -54,28 +54,35 @@ export default function DashboardPage() {
   const [chatPartnerUsername, setChatPartnerUsername] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+
   const handleGigSubmit = async (gigData: {
     title: string;
     description: string;
     price: number;
     id?: number;
+    skill_ids?: number[];
   }) => {
     try {
       if (gigData.id) {
-        await api.patch(`/gigs/${gigData.id}/`, gigData);
+        const response = await api.patch(`/gigs/${gigData.id}/`, gigData);
         toast.success("Pasiūlymas atnaujintas!");
+        return response.data;
       } else {
-        await api.post("/gigs/", gigData);
+        const response = await api.post("/gigs/", gigData);
         toast.success("Pasiūlymas sėkmingai sukurtas!");
+        return response.data;
       }
-      await fetchGigs();
-      setIsGigModalOpen(false);
-      console.log("Gig created:", gigData);
     } catch (err) {
       console.error("Error while creating the gig:", err);
-      toast.error("Pasiūlymo sukurti nepavyko")
+      toast.error("Pasiūlymo sukurti nepavyko");
+      return null;
+    } finally {
+      await fetchGigs();
+      setIsGigModalOpen(false);
     }
   };
+
+
 
   const confirmGigDelete = async () => {
     if (!gigToDelete) return;
@@ -280,17 +287,21 @@ export default function DashboardPage() {
 
                           {gig.status === "in_progress" && (
                             <>
-                              <Button
-                                color="yellow"
-                                size="xs"
-                                onClick={() => {
-                                  // open comments modal
-                                }}
-                                className="flex items-center gap-1 px-3 py-1.5"
-                              >
-                                <FaCommentDots className="text-sm" />
-                                Komentarai
-                              </Button>
+                              {gig.status === "in_progress" && user.role === "client" && (
+                                <Button
+                                  color="yellow"
+                                  size="xs"
+                                  onClick={() => {
+                                    setSelectedGig(gig);
+                                    setIsGigModalOpen(true);
+                                  }}
+                                  className="flex items-center gap-1 px-3 py-1.5"
+                                >
+                                  <FaFileAlt className="text-sm" />
+                                  Įkelti instrukciją
+                                </Button>
+                              )}
+
                               <Button
                                 color="blue"
                                 size="xs"

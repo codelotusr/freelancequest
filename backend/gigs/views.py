@@ -55,6 +55,15 @@ class GigViewSet(viewsets.ModelViewSet):
         gig = serializer.save()
         self._set_gig_skills(gig, self.request.data)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        gig = serializer.save(client=request.user)
+        self._set_gig_skills(gig, request.data)
+
+        response_serializer = self.get_serializer(gig)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )

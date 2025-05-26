@@ -119,7 +119,7 @@ class Command(BaseCommand):
             },
             {
                 "code": "daily_apply",
-                "title": "Paraiška dienai",
+                "title": "Dienos paraiška",
                 "description": "Pateik bent vieną paraišką šiandien",
                 "xp_reward": 60,
                 "point_reward": 10,
@@ -128,7 +128,7 @@ class Command(BaseCommand):
             },
             {
                 "code": "daily_review",
-                "title": "Įvertink dieną",
+                "title": "Dienos įvertinimas",
                 "description": "Parašyk bent vieną atsiliepimą šiandien",
                 "xp_reward": 70,
                 "point_reward": 10,
@@ -137,7 +137,7 @@ class Command(BaseCommand):
             },
             {
                 "code": "daily_chat",
-                "title": "Bendrauk",
+                "title": "Bendrauk šiandien",
                 "description": "Išsiųsk bent vieną žinutę pokalbyje",
                 "xp_reward": 40,
                 "point_reward": 5,

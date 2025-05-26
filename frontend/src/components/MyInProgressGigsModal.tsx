@@ -150,15 +150,6 @@ export default function MyInProgressGigsModal({
 
                   <Button
                     size="xs"
-                    color="indigo"
-                    disabled
-                    className="flex items-center gap-1 opacity-60 justify-center"
-                  >
-                    <FaCommentDots className="text-xs" /> Komentarai
-                  </Button>
-
-                  <Button
-                    size="xs"
                     color="yellow"
                     onClick={() => {
                       const partner = gig.client_username;

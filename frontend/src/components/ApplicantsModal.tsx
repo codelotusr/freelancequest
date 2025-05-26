@@ -1,5 +1,5 @@
 import { Modal, Button } from "flowbite-react";
-import { FaUser, FaCheck, FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
+import { FaCheck, FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 type Application = {
@@ -38,10 +38,9 @@ export default function ApplicantsModal({
 
   return (
     <Modal show={isOpen} onClose={onClose} size="lg">
-      <div className="p-6 space-y-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Paraiškos darbui:{" "}
-          <span className="text-violet-500">{gig?.title || "—"}</span>
+      <div className="p-6 space-y-6 bg-white dark:bg-gray-800 rounded-lg">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Paraiškos darbui: <span className="text-violet-500">{gig?.title}</span>
         </h3>
 
         {applications.length === 0 ? (
@@ -49,24 +48,21 @@ export default function ApplicantsModal({
             Nėra jokių paraiškų šiam pasiūlymui.
           </p>
         ) : (
-          <ul className="space-y-4">
-            {applications.map((application) => (
-              <li
-                key={application.id}
-                className="flex justify-between items-center border-b border-gray-700 pb-2"
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                className="flex justify-between items-center border border-gray-700 rounded-lg p-3 bg-gray-900"
               >
-                <div className="text-sm text-gray-100">
-                  <p className="font-medium">
-                    <FaUser className="inline-block mr-1 text-white" />
-                    {application.applicant_name}
-                  </p>
-                </div>
+                <p className="text-white text-sm font-medium truncate max-w-[40%]">
+                  {app.applicant_name}
+                </p>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-nowrap">
                   <Button
                     size="xs"
                     color="blue"
-                    onClick={() => navigate(`/profile/${application.applicant_username}`)}
+                    onClick={() => navigate(`/profile/${app.applicant_username}`)}
                     className="flex items-center gap-1"
                   >
                     <FaExternalLinkAlt className="text-xs" />
@@ -76,7 +72,7 @@ export default function ApplicantsModal({
                   <Button
                     size="xs"
                     color="green"
-                    onClick={() => onConfirm(application.applicant)}
+                    onClick={() => onConfirm(app.applicant)}
                     className="flex items-center gap-1"
                   >
                     <FaCheck className="text-xs" />
@@ -86,18 +82,19 @@ export default function ApplicantsModal({
                   <Button
                     size="xs"
                     color="red"
-                    onClick={() => onReject(application.applicant)}
+                    onClick={() => onReject(app.applicant)}
                     className="flex items-center gap-1"
                   >
-                    <FaTrashAlt className="text-xs" /> Atmesti
+                    <FaTrashAlt className="text-xs" />
+                    Atmesti
                   </Button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end pt-6 border-t border-gray-700">
           <Button color="gray" onClick={onClose}>
             Uždaryti
           </Button>

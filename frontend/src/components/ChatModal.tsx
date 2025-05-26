@@ -36,12 +36,16 @@ export default function ChatModal({ show, onClose, otherUsername }: ChatModalPro
 
   useEffect(() => {
     if (show && user) {
-      const token = localStorage.getItem("accessToken");
+      const token =
+        localStorage.getItem("accessToken") ||
+        document.cookie.match(/(?:^|; )access=([^;]*)/)?.[1];
+
       ws.current = new WebSocket(
         `ws://localhost:8000/ws/chat/${otherUsername}/?token=${token}`
       );
 
       ws.current.onmessage = (e) => {
+        console.timeEnd("chat-msg");
         const data = JSON.parse(e.data);
 
         const hydrated: Message = {
@@ -98,6 +102,7 @@ export default function ChatModal({ show, onClose, otherUsername }: ChatModalPro
 
   const handleSend = () => {
     if (ws.current && input.trim()) {
+      console.time("chat-msg");
       ws.current.send(JSON.stringify({ message: input }));
       setInput("");
     }

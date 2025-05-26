@@ -116,3 +116,43 @@ def test_logout_success(api_client, create_user):
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
     response = api_client.post("/api/auth/logout/", {"refresh": refresh_token})
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_public_user_profile_view(api_client):
+    user = User.objects.create_user(
+        email="testuser@example.com",
+        password="Testpass123!",
+        username="testuser",
+        first_name="Tadas",
+        last_name="Testinis",
+    )
+
+    response = api_client.get(f"/api/user/profile/{user.username}/")
+    assert response.status_code == 200
+    assert response.data["username"] == "testuser"
+    assert response.data["first_name"] == "Tadas"
+    assert "gamification_profile" in response.data
+
+
+@pytest.mark.django_db
+def test_check_username_available(api_client):
+    response = api_client.get("/api/user/check-username/?username=unikalus")
+    assert response.status_code == 200
+    assert response.data["available"] is True
+
+
+def test_check_username_reserved(api_client):
+    response = api_client.get("/api/user/check-username/?username=admin")
+    assert response.status_code == 409
+    assert "detail" in response.data
+
+
+@pytest.mark.django_db
+def test_check_username_taken(api_client):
+    User.objects.create_user(
+        email="taken@example.com", password="Test123!", username="uzimtas"
+    )
+    response = api_client.get("/api/user/check-username/?username=uzimtas")
+    assert response.status_code == 409
+    assert "detail" in response.data

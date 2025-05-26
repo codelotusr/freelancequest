@@ -1,7 +1,8 @@
 from dj_rest_auth.views import LogoutView
 from rest_framework import permissions, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -10,6 +11,7 @@ from users.serializers import CustomUserDetailsSerializer, SkillSerializer
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def check_username(request):
     username = request.query_params.get("username", "").strip().lower()
     if not username:

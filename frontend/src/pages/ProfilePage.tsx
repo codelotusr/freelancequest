@@ -121,11 +121,11 @@ export default function ProfilePage() {
           reviewsRes,
         ] = await Promise.all([
           api.get(`/user/profile/${username}/`),
-          api.get(`/gamification/badges/`),
+          api.get(`/gamification/badges/?username=${username}`),
           api.get(`/gamification/platform-benefits/`),
           api.get(`/gamification/user-benefits/`),
           api.get(`/gamification/missions/`),
-          api.get(`/gamification/progress/`),
+          api.get(`/gamification/progress/?username=${username}`),
           api.get(`/reviews/?gig__freelancer__username=${username}`),
         ]);
 
@@ -442,46 +442,56 @@ export default function ProfilePage() {
                 })}
             </div>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Platformos naudos</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {benefits.map((benefit) => {
-                  const owned = ownedBenefitIds.has(benefit.id);
-                  return (
-                    <div
-                      key={benefit.id}
-                      className={`p-4 rounded-lg shadow flex flex-col justify-between h-full ${owned ? "bg-green-100 dark:bg-green-900" : "bg-white dark:bg-gray-800"
-                        }`}
-                    >
-                      <div>
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                          {benefit.name}
-                          {owned ? (
-                            <FaCheckCircle className="text-green-500" />
-                          ) : (
-                            <FaTimesCircle className="text-red-400" />
-                          )}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{benefit.description}</p>
-                      </div>
-
-                      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <p className="text-sm">
-                          <strong>Kaina:</strong> {benefit.cost} {benefit.cost < 10 ? "taškai" : "taškų"}
-                        </p>
-                        {!owned && (
-                          <Button color="blue" className="w-full sm:w-auto min-w-[100px] text-sm font-medium px-5 py-2 rounded-md">
-                            Pirkti
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </>
         )}
+        {isOwnProfile ? (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Sistemos naudos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {benefits.map((benefit) => {
+                const owned = ownedBenefitIds.has(benefit.id);
+                return (
+                  <div
+                    key={benefit.id}
+                    className={`p-4 rounded-lg shadow flex flex-col justify-between h-full ${owned
+                      ? "bg-green-100 dark:bg-green-900"
+                      : "bg-white dark:bg-gray-800"
+                      }`}
+                  >
+                    <div>
+                      <h3 className="text-lg font-bold flex items-center gap-2">
+                        {benefit.name}
+                        {owned ? (
+                          <FaCheckCircle className="text-green-500" />
+                        ) : (
+                          <FaTimesCircle className="text-red-400" />
+                        )}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        {benefit.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <p className="text-sm">
+                        <strong>Kaina:</strong> {benefit.cost}{" "}
+                        {benefit.cost < 10 ? "taškai" : "taškų"}
+                      </p>
+                      {!owned && (
+                        <Button
+                          color="blue"
+                          className="w-full sm:w-auto min-w-[100px] text-sm font-medium px-5 py-2 rounded-md"
+                        >
+                          Pirkti
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {isOwnProfile && (

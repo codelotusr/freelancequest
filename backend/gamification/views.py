@@ -39,6 +39,18 @@ class UserMissionProgressViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[Any]:
+        username = self.request.query_params.get("username")
+        if username:
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return UserMissionProgress.objects.none()
+            return UserMissionProgress.objects.filter(user=user).select_related(
+                "mission"
+            )
         return UserMissionProgress.objects.filter(
             user=self.request.user
         ).select_related("mission")
@@ -81,10 +93,22 @@ class BadgeViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        username = self.request.query_params.get("username")
         user = self.request.user
+
+        if username:
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Badge.objects.none()
+
         user_badge_ids = UserBadge.objects.filter(user=user).values_list(
             "badge_id", flat=True
         )
+
         return Badge.objects.annotate(
             unlocked=models.Case(
                 models.When(id__in=user_badge_ids, then=models.Value(True)),

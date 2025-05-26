@@ -28,9 +28,12 @@ class GigFilter(filters.FilterSet):
 
 
 class ReviewFilter(filters.FilterSet):
+    gig__freelancer__username = filters.CharFilter(
+        field_name="gig__freelancer__username", lookup_expr="iexact"
+    )
+
     class Meta:
         model = Review
-        fields = {
-            "gig__freelancer": ["exact"],
-            "gig__client": ["exact"],
-        }
+        fields = [
+            "gig__freelancer__username",
+        ]
